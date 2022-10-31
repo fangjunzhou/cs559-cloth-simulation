@@ -1,0 +1,19 @@
+{
+  "name": "cs559-3d-cloth-simulation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fangjun-Zhou/cs559-cloth-simulation.git"
+  },
+  "author": "Fangjun Zhou",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Fangjun-Zhou/cs559-cloth-simulation/issues"
+  },
+  "homepage": "https://github.com/Fangjun-Zhou/cs559-cloth-simulation#readme"
+}
