@@ -4765,6 +4765,7 @@
         const aspectInput = document.createElement("input");
         aspectInput.type = "number";
         aspectInput.value = this.aspect.toString();
+        aspectInput.style.minWidth = "0px";
         aspectInput.style.flex = "1";
         aspectInput.addEventListener("change", (event) => {
           this.aspect = parseFloat(aspectInput.value);
@@ -4783,6 +4784,7 @@
         const nearInput = document.createElement("input");
         nearInput.type = "number";
         nearInput.value = this.near.toString();
+        nearInput.style.minWidth = "0px";
         nearInput.style.flex = "1";
         nearInput.addEventListener("change", (event) => {
           this.near = parseFloat(nearInput.value);
@@ -4801,6 +4803,7 @@
         const farInput = document.createElement("input");
         farInput.type = "number";
         farInput.value = this.far.toString();
+        farInput.style.minWidth = "0px";
         farInput.style.flex = "1";
         farInput.addEventListener("change", (event) => {
           this.far = parseFloat(farInput.value);
@@ -5044,6 +5047,9 @@
       default: 1e3
     }
   };
+  OrthographicCameraData3D = __decorateClass([
+    IComponent.register
+  ], OrthographicCameraData3D);
 
   // white-dwarf/submodules/ecsy/src/TagComponent.js
   var TagComponent = class extends Component {
@@ -5062,6 +5068,11 @@
 
   // white-dwarf/src/Core/Render/System/Canvas3DRenderer.ts
   var Canvas3DRenderer = class extends System {
+    constructor() {
+      super(...arguments);
+      this.worldToCamera = mat4_exports.create();
+      this.cameraToScreen = mat4_exports.create();
+    }
     init(attributes) {
       this.mainCanvas = attributes == null ? void 0 : attributes.mainCanvas;
       this.canvasContext = this.mainCanvas.getContext(
@@ -5092,13 +5103,15 @@
     perspectiveWorldToCamera(camTransform, camData) {
       const worldToCamera = mat4_exports.create();
       mat4_exports.invert(worldToCamera, this.objectToWorld(camTransform));
+      const perspective2 = mat4_exports.create();
       mat4_exports.perspective(
-        worldToCamera,
+        perspective2,
         camData.fov,
         camData.aspect,
         camData.near,
         camData.far
       );
+      mat4_exports.multiply(worldToCamera, perspective2, worldToCamera);
       return worldToCamera;
     }
     objectToWorld(transform) {
@@ -5111,6 +5124,15 @@
       );
       return objectToWorld;
     }
+    generateCameraToScreenMatrix() {
+      this.cameraToScreen = mat4_exports.create();
+      mat4_exports.fromTranslation(this.cameraToScreen, [
+        this.mainCanvas.width / 2,
+        this.mainCanvas.height / 2,
+        0
+      ]);
+      mat4_exports.scale(this.cameraToScreen, this.cameraToScreen, [100, 100, 1]);
+    }
   };
   Canvas3DRenderer.queries = {
     perspectiveMainCamera: {
@@ -5120,6 +5142,69 @@
       components: [MainCameraTag, OrthographicCameraData3D, TransformData3D]
     }
   };
+
+  // white-dwarf/src/Core/Render/System/BuildInRenderers/Canvas3DLineFrameRenderer.ts
+  var _Canvas3DLineFrameRenderer = class extends Canvas3DRenderer {
+    execute(delta, time) {
+      try {
+        super.execute(delta, time);
+      } catch (error) {
+        console.warn(error);
+        return;
+      }
+      this.generateCameraToScreenMatrix();
+      const canvasSize = vec2_exports.fromValues(
+        this.mainCanvas.width,
+        this.mainCanvas.height
+      );
+      if (this.queries.perspectiveMainCamera.results.length > 0) {
+        const camera = this.queries.perspectiveMainCamera.results[0];
+        const cameraTransform = camera.getComponent(
+          TransformData3D
+        );
+        const cameraPerspective = camera.getMutableComponent(
+          PerspectiveCameraData3D
+        );
+        cameraPerspective.aspect = canvasSize[0] / canvasSize[1];
+        this.worldToCamera = this.perspectiveWorldToCamera(
+          cameraTransform,
+          cameraPerspective
+        );
+      } else {
+      }
+      this.queries.lineEntities.results.forEach((entity) => {
+        const transform = entity.getComponent(TransformData3D);
+        const renderData = entity.getComponent(
+          LineFrameRenderData3D
+        );
+        const objectToWorld = this.objectToWorld(transform);
+        renderData.segments.forEach((segment) => {
+          const objectToScreen = mat4_exports.create();
+          mat4_exports.multiply(objectToScreen, this.worldToCamera, objectToWorld);
+          mat4_exports.multiply(objectToScreen, this.cameraToScreen, objectToScreen);
+          const startPoint = vec3_exports.create();
+          vec3_exports.transformMat4(startPoint, segment.p0.value, objectToScreen);
+          const endPoint = vec3_exports.create();
+          vec3_exports.transformMat4(endPoint, segment.p1.value, objectToScreen);
+          this.drawLine(startPoint, endPoint, "black", 1);
+        });
+      });
+    }
+    drawLine(startPoint, endPoint, color, lineWidth) {
+      this.canvasContext.strokeStyle = color;
+      this.canvasContext.lineWidth = lineWidth;
+      this.canvasContext.beginPath();
+      this.canvasContext.moveTo(startPoint[0], startPoint[1]);
+      this.canvasContext.lineTo(endPoint[0], endPoint[1]);
+      this.canvasContext.stroke();
+    }
+  };
+  var Canvas3DLineFrameRenderer = _Canvas3DLineFrameRenderer;
+  Canvas3DLineFrameRenderer.queries = __spreadProps(__spreadValues({}, _Canvas3DLineFrameRenderer.queries), {
+    lineEntities: {
+      components: [LineFrameRenderData3D, TransformData3D]
+    }
+  });
 
   // white-dwarf/src/Core/Render/System/ClearCanvasSystem.ts
   var ClearCanvasSystem = class extends System {
@@ -5146,7 +5231,7 @@
         world.registerSystem(ClearCanvasSystem, {
           mainCanvas: this.mainCanvas,
           priority: -100
-        }).registerSystem(Canvas3DRenderer, {
+        }).registerSystem(Canvas3DLineFrameRenderer, {
           mainCanvas: this.mainCanvas
         });
       };
@@ -5199,8 +5284,25 @@
       }
     };
     systemContext.editorStart = () => {
-      mainWorld.createEntity("Editor Main Camera").addComponent(TransformData3D).addComponent(PerspectiveCameraData3D).addComponent(MainCameraTag);
-      mainWorld.createEntity("Line Segment Render").addComponent(TransformData3D).addComponent(LineFrameRenderData3D);
+      mainWorld.createEntity("Editor Main Camera").addComponent(TransformData3D, {
+        position: new Vector3(0, 0, -10)
+      }).addComponent(PerspectiveCameraData3D).addComponent(MainCameraTag);
+      mainWorld.createEntity("Line Segment Render").addComponent(TransformData3D).addComponent(LineFrameRenderData3D, {
+        segments: [
+          new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(1, 0, 0)),
+          new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(0, 1, 0)),
+          new LineFrame3DSegment(new Vector3(1, 1, 0), new Vector3(1, 0, 0)),
+          new LineFrame3DSegment(new Vector3(1, 1, 0), new Vector3(0, 1, 0)),
+          new LineFrame3DSegment(new Vector3(0, 0, 1), new Vector3(1, 0, 1)),
+          new LineFrame3DSegment(new Vector3(0, 0, 1), new Vector3(0, 1, 1)),
+          new LineFrame3DSegment(new Vector3(1, 1, 1), new Vector3(1, 0, 1)),
+          new LineFrame3DSegment(new Vector3(1, 1, 1), new Vector3(0, 1, 1)),
+          new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(0, 0, 1)),
+          new LineFrame3DSegment(new Vector3(1, 0, 0), new Vector3(1, 0, 1)),
+          new LineFrame3DSegment(new Vector3(0, 1, 0), new Vector3(0, 1, 1)),
+          new LineFrame3DSegment(new Vector3(1, 1, 0), new Vector3(1, 1, 1))
+        ]
+      });
       if (coreRenderContext.mainCanvas) {
         new EditorSystem3DRegister(coreRenderContext.mainCanvas).register(
           mainWorld

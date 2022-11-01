@@ -11,6 +11,8 @@ import { MainCameraTag } from "white-dwarf/Core/Render/TagComponent/MainCameraTa
 import { EditorSystem2DRegister } from "white-dwarf/Editor/EditorSystem2DRegister";
 import { EditorSystem3DRegister } from "white-dwarf/Editor/EditorSystem3DRegister";
 import { EditorCamTagAppendSystem } from "white-dwarf/Editor/System/EditorCamTagAppendSystem";
+import { LineFrame3DSegment } from "white-dwarf/Mathematics/LineFrame3DSegment";
+import { Vector3 } from "white-dwarf/Mathematics/Vector3";
 
 export const main = () => {
   systemContext.coreSetup = () => {
@@ -25,7 +27,9 @@ export const main = () => {
     // Add a editor cam.
     mainWorld
       .createEntity("Editor Main Camera")
-      .addComponent(TransformData3D)
+      .addComponent(TransformData3D, {
+        position: new Vector3(0, 0, -10),
+      })
       .addComponent(PerspectiveCameraData3D)
       .addComponent(MainCameraTag);
 
@@ -33,7 +37,22 @@ export const main = () => {
     mainWorld
       .createEntity("Line Segment Render")
       .addComponent(TransformData3D)
-      .addComponent(LineFrameRenderData3D);
+      .addComponent(LineFrameRenderData3D, {
+        segments: [
+          new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(1, 0, 0)),
+          new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(0, 1, 0)),
+          new LineFrame3DSegment(new Vector3(1, 1, 0), new Vector3(1, 0, 0)),
+          new LineFrame3DSegment(new Vector3(1, 1, 0), new Vector3(0, 1, 0)),
+          new LineFrame3DSegment(new Vector3(0, 0, 1), new Vector3(1, 0, 1)),
+          new LineFrame3DSegment(new Vector3(0, 0, 1), new Vector3(0, 1, 1)),
+          new LineFrame3DSegment(new Vector3(1, 1, 1), new Vector3(1, 0, 1)),
+          new LineFrame3DSegment(new Vector3(1, 1, 1), new Vector3(0, 1, 1)),
+          new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(0, 0, 1)),
+          new LineFrame3DSegment(new Vector3(1, 0, 0), new Vector3(1, 0, 1)),
+          new LineFrame3DSegment(new Vector3(0, 1, 0), new Vector3(0, 1, 1)),
+          new LineFrame3DSegment(new Vector3(1, 1, 0), new Vector3(1, 1, 1)),
+        ],
+      });
 
     // Register Editor System.
     if (coreRenderContext.mainCanvas) {
