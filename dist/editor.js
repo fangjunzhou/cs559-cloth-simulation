@@ -5250,6 +5250,127 @@
     }
   };
 
+  // white-dwarf/src/Mathematics/Vector2.ts
+  var Vector2 = class {
+    constructor(x, y) {
+      this.value = vec2_exports.fromValues(x, y);
+    }
+    set(x, y) {
+      vec2_exports.set(this.value, x, y);
+    }
+    copy(v) {
+      this.value = vec2_exports.copy(this.value, v.value);
+      return this;
+    }
+    clone() {
+      return new Vector2(this.value[0], this.value[1]);
+    }
+  };
+  var Vector2Type = createType({
+    name: "Vector2",
+    default: new Vector2(0, 0),
+    copy: copyCopyable,
+    clone: cloneClonable
+  });
+  var Vector2CustomEditor = (value, onChange) => {
+    const vector2Div = document.createElement("div");
+    vector2Div.style.display = "flex";
+    vector2Div.style.flexDirection = "row";
+    const xLabel = document.createElement("label");
+    xLabel.innerText = "X";
+    vector2Div.appendChild(xLabel);
+    const xInput = document.createElement("input");
+    xInput.type = "number";
+    xInput.style.minWidth = "0px";
+    xInput.style.flexGrow = "1";
+    xInput.value = value.value[0].toString();
+    vector2Div.appendChild(xInput);
+    const yLabel = document.createElement("label");
+    yLabel.innerText = "Y";
+    vector2Div.appendChild(yLabel);
+    const yInput = document.createElement("input");
+    yInput.type = "number";
+    yInput.style.minWidth = "0px";
+    yInput.style.flexGrow = "1";
+    yInput.value = value.value[1].toString();
+    vector2Div.appendChild(yInput);
+    const update = () => {
+      onChange(new Vector2(parseFloat(xInput.value), parseFloat(yInput.value)));
+    };
+    const setVector2 = (v) => {
+      if (document.activeElement === xInput || document.activeElement === yInput) {
+        return;
+      }
+      xInput.value = v.value[0].toString();
+      yInput.value = v.value[1].toString();
+    };
+    xInput.onchange = update;
+    yInput.onchange = update;
+    return [vector2Div, setVector2];
+  };
+
+  // white-dwarf/src/Utils/System/Cam3DDragSystem.ts
+  var rotateSensitive = 0.1;
+  var Cam3DDragSystem = class extends System {
+    constructor() {
+      super(...arguments);
+      this.deltaRot = new Vector2(0, 0);
+      this.deltaPos = new Vector3(0, 0, 0);
+    }
+    init(attributes) {
+      this.mainCanvas = attributes == null ? void 0 : attributes.mainCanvas;
+      this.canvasContext = this.mainCanvas.getContext(
+        "2d"
+      );
+      this.mainCanvas.addEventListener("mousemove", (event) => {
+        if (event.buttons === 2) {
+          vec2_exports.add(
+            this.deltaRot.value,
+            this.deltaRot.value,
+            vec2_exports.fromValues(
+              -event.movementX * rotateSensitive,
+              event.movementY * rotateSensitive
+            )
+          );
+        }
+      });
+    }
+    execute(delta, time) {
+      if (this.queries.perspectiveMainCamera.results.length + this.queries.orthographicMainCamera.results.length === 0) {
+        return;
+      } else if (this.queries.perspectiveMainCamera.results.length + this.queries.orthographicMainCamera.results.length > 1) {
+        return;
+      }
+      const mainCameraTransform = this.queries.perspectiveMainCamera.results[0].getMutableComponent(
+        TransformData3D
+      );
+      const front = vec3_exports.fromValues(0, 0, -1);
+      vec3_exports.transformQuat(front, front, mainCameraTransform.rotation.value);
+      const right = vec3_exports.fromValues(1, 0, 0);
+      vec3_exports.transformQuat(right, right, mainCameraTransform.rotation.value);
+      const rotX = quat_exports.create();
+      quat_exports.rotateY(rotX, rotX, this.deltaRot.value[0] * delta);
+      const rotY = quat_exports.create();
+      quat_exports.setAxisAngle(rotY, right, this.deltaRot.value[1] * delta);
+      const rot = quat_exports.create();
+      quat_exports.multiply(rot, rotX, rotY);
+      quat_exports.multiply(
+        mainCameraTransform.rotation.value,
+        rot,
+        mainCameraTransform.rotation.value
+      );
+      vec2_exports.set(this.deltaRot.value, 0, 0);
+    }
+  };
+  Cam3DDragSystem.queries = {
+    perspectiveMainCamera: {
+      components: [MainCameraTag, PerspectiveCameraData3D, TransformData3D]
+    },
+    orthographicMainCamera: {
+      components: [MainCameraTag, OrthographicCameraData3D, TransformData3D]
+    }
+  };
+
   // white-dwarf/src/Editor/System/EditorViewPort3DSystem.ts
   var _EditorViewPort3DSystem = class extends Canvas3DRenderer {
     execute(delta, time) {
@@ -5293,7 +5414,9 @@
   var EditorSystem3DRegister = class {
     constructor(mainCanvas) {
       this.register = (world) => {
-        world.registerSystem(EditorViewPort3DSystem, {
+        world.registerSystem(Cam3DDragSystem, {
+          mainCanvas: this.mainCanvas
+        }).registerSystem(EditorViewPort3DSystem, {
           mainCanvas: this.mainCanvas
         });
       };
@@ -5530,65 +5653,6 @@
 
   // white-dwarf/src/Editor/System/EditorInspectorSystem.ts
   var import_js_file_download = __toESM(require_file_download());
-
-  // white-dwarf/src/Mathematics/Vector2.ts
-  var Vector2 = class {
-    constructor(x, y) {
-      this.value = vec2_exports.fromValues(x, y);
-    }
-    set(x, y) {
-      vec2_exports.set(this.value, x, y);
-    }
-    copy(v) {
-      this.value = vec2_exports.copy(this.value, v.value);
-      return this;
-    }
-    clone() {
-      return new Vector2(this.value[0], this.value[1]);
-    }
-  };
-  var Vector2Type = createType({
-    name: "Vector2",
-    default: new Vector2(0, 0),
-    copy: copyCopyable,
-    clone: cloneClonable
-  });
-  var Vector2CustomEditor = (value, onChange) => {
-    const vector2Div = document.createElement("div");
-    vector2Div.style.display = "flex";
-    vector2Div.style.flexDirection = "row";
-    const xLabel = document.createElement("label");
-    xLabel.innerText = "X";
-    vector2Div.appendChild(xLabel);
-    const xInput = document.createElement("input");
-    xInput.type = "number";
-    xInput.style.minWidth = "0px";
-    xInput.style.flexGrow = "1";
-    xInput.value = value.value[0].toString();
-    vector2Div.appendChild(xInput);
-    const yLabel = document.createElement("label");
-    yLabel.innerText = "Y";
-    vector2Div.appendChild(yLabel);
-    const yInput = document.createElement("input");
-    yInput.type = "number";
-    yInput.style.minWidth = "0px";
-    yInput.style.flexGrow = "1";
-    yInput.value = value.value[1].toString();
-    vector2Div.appendChild(yInput);
-    const update = () => {
-      onChange(new Vector2(parseFloat(xInput.value), parseFloat(yInput.value)));
-    };
-    const setVector2 = (v) => {
-      if (document.activeElement === xInput || document.activeElement === yInput) {
-        return;
-      }
-      xInput.value = v.value[0].toString();
-      yInput.value = v.value[1].toString();
-    };
-    xInput.onchange = update;
-    yInput.onchange = update;
-    return [vector2Div, setVector2];
-  };
 
   // white-dwarf/src/Core/Locomotion/DataComponent/TransformData2D.ts
   var TransformData2D = class extends Component {
