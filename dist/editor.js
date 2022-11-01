@@ -5133,26 +5133,7 @@
       ]);
       mat4_exports.scale(this.cameraToScreen, this.cameraToScreen, [100, 100, 1]);
     }
-  };
-  Canvas3DRenderer.queries = {
-    perspectiveMainCamera: {
-      components: [MainCameraTag, PerspectiveCameraData3D, TransformData3D]
-    },
-    orthographicMainCamera: {
-      components: [MainCameraTag, OrthographicCameraData3D, TransformData3D]
-    }
-  };
-
-  // white-dwarf/src/Core/Render/System/BuildInRenderers/Canvas3DLineFrameRenderer.ts
-  var _Canvas3DLineFrameRenderer = class extends Canvas3DRenderer {
-    execute(delta, time) {
-      try {
-        super.execute(delta, time);
-      } catch (error) {
-        console.warn(error);
-        return;
-      }
-      this.generateCameraToScreenMatrix();
+    generateWorldToCameraMatrix() {
       const canvasSize = vec2_exports.fromValues(
         this.mainCanvas.width,
         this.mainCanvas.height
@@ -5172,6 +5153,36 @@
         );
       } else {
       }
+    }
+    drawLine(startPoint, endPoint, color, lineWidth) {
+      this.canvasContext.strokeStyle = color;
+      this.canvasContext.lineWidth = lineWidth;
+      this.canvasContext.beginPath();
+      this.canvasContext.moveTo(startPoint[0], startPoint[1]);
+      this.canvasContext.lineTo(endPoint[0], endPoint[1]);
+      this.canvasContext.stroke();
+    }
+  };
+  Canvas3DRenderer.queries = {
+    perspectiveMainCamera: {
+      components: [MainCameraTag, PerspectiveCameraData3D, TransformData3D]
+    },
+    orthographicMainCamera: {
+      components: [MainCameraTag, OrthographicCameraData3D, TransformData3D]
+    }
+  };
+
+  // white-dwarf/src/Core/Render/System/BuildInRenderers/Canvas3DLineFrameRenderer.ts
+  var _Canvas3DLineFrameRenderer = class extends Canvas3DRenderer {
+    execute(delta, time) {
+      try {
+        super.execute(delta, time);
+      } catch (error) {
+        console.warn(error);
+        return;
+      }
+      this.generateWorldToCameraMatrix();
+      this.generateCameraToScreenMatrix();
       this.queries.lineEntities.results.forEach((entity) => {
         const transform = entity.getComponent(TransformData3D);
         const renderData = entity.getComponent(
@@ -5189,14 +5200,6 @@
           this.drawLine(startPoint, endPoint, "black", 1);
         });
       });
-    }
-    drawLine(startPoint, endPoint, color, lineWidth) {
-      this.canvasContext.strokeStyle = color;
-      this.canvasContext.lineWidth = lineWidth;
-      this.canvasContext.beginPath();
-      this.canvasContext.moveTo(startPoint[0], startPoint[1]);
-      this.canvasContext.lineTo(endPoint[0], endPoint[1]);
-      this.canvasContext.stroke();
     }
   };
   var Canvas3DLineFrameRenderer = _Canvas3DLineFrameRenderer;
@@ -5239,10 +5242,52 @@
     }
   };
 
+  // white-dwarf/src/Editor/System/EditorViewPort3DSystem.ts
+  var _EditorViewPort3DSystem = class extends Canvas3DRenderer {
+    execute(delta, time) {
+      try {
+        super.execute(delta, time);
+      } catch (error) {
+        console.warn(error);
+        return;
+      }
+      this.generateWorldToCameraMatrix();
+      this.generateCameraToScreenMatrix();
+      if (_EditorViewPort3DSystem.inspectTransform) {
+        const objectToWorld = this.objectToWorld(
+          _EditorViewPort3DSystem.inspectTransform
+        );
+        const objectToScreen = mat4_exports.create();
+        mat4_exports.multiply(objectToScreen, this.worldToCamera, objectToWorld);
+        mat4_exports.multiply(objectToScreen, this.cameraToScreen, objectToScreen);
+        this.drawAxis(objectToScreen);
+      }
+    }
+    drawAxis(objectToScreen) {
+      const startPoint = vec3_exports.create();
+      vec3_exports.transformMat4(startPoint, [0, 0, 0], objectToScreen);
+      const endPointX = vec3_exports.create();
+      vec3_exports.transformMat4(endPointX, [1, 0, 0], objectToScreen);
+      const endPointY = vec3_exports.create();
+      vec3_exports.transformMat4(endPointY, [0, 1, 0], objectToScreen);
+      const endPointZ = vec3_exports.create();
+      vec3_exports.transformMat4(endPointZ, [0, 0, 1], objectToScreen);
+      this.drawLine(startPoint, endPointX, "red", 1);
+      this.drawLine(startPoint, endPointY, "green", 1);
+      this.drawLine(startPoint, endPointZ, "blue", 1);
+    }
+  };
+  var EditorViewPort3DSystem = _EditorViewPort3DSystem;
+  EditorViewPort3DSystem.inspectEntity = null;
+  EditorViewPort3DSystem.inspectTransform = null;
+
   // white-dwarf/src/Editor/EditorSystem3DRegister.ts
   var EditorSystem3DRegister = class {
     constructor(mainCanvas) {
       this.register = (world) => {
+        world.registerSystem(EditorViewPort3DSystem, {
+          mainCanvas: this.mainCanvas
+        });
       };
       this.mainCanvas = mainCanvas;
     }
@@ -5289,18 +5334,27 @@
       }).addComponent(PerspectiveCameraData3D).addComponent(MainCameraTag);
       mainWorld.createEntity("Line Segment Render").addComponent(TransformData3D).addComponent(LineFrameRenderData3D, {
         segments: [
-          new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(1, 0, 0)),
-          new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(0, 1, 0)),
-          new LineFrame3DSegment(new Vector3(1, 1, 0), new Vector3(1, 0, 0)),
-          new LineFrame3DSegment(new Vector3(1, 1, 0), new Vector3(0, 1, 0)),
-          new LineFrame3DSegment(new Vector3(0, 0, 1), new Vector3(1, 0, 1)),
-          new LineFrame3DSegment(new Vector3(0, 0, 1), new Vector3(0, 1, 1)),
-          new LineFrame3DSegment(new Vector3(1, 1, 1), new Vector3(1, 0, 1)),
-          new LineFrame3DSegment(new Vector3(1, 1, 1), new Vector3(0, 1, 1)),
-          new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(0, 0, 1)),
-          new LineFrame3DSegment(new Vector3(1, 0, 0), new Vector3(1, 0, 1)),
-          new LineFrame3DSegment(new Vector3(0, 1, 0), new Vector3(0, 1, 1)),
-          new LineFrame3DSegment(new Vector3(1, 1, 0), new Vector3(1, 1, 1))
+          new LineFrame3DSegment(
+            new Vector3(-1, -1, -1),
+            new Vector3(1, -1, -1)
+          ),
+          new LineFrame3DSegment(
+            new Vector3(-1, -1, -1),
+            new Vector3(-1, 1, -1)
+          ),
+          new LineFrame3DSegment(new Vector3(1, 1, -1), new Vector3(1, -1, -1)),
+          new LineFrame3DSegment(new Vector3(1, 1, -1), new Vector3(-1, 1, -1)),
+          new LineFrame3DSegment(new Vector3(-1, -1, 1), new Vector3(1, -1, 1)),
+          new LineFrame3DSegment(new Vector3(-1, -1, 1), new Vector3(-1, 1, 1)),
+          new LineFrame3DSegment(new Vector3(1, 1, 1), new Vector3(1, -1, 1)),
+          new LineFrame3DSegment(new Vector3(1, 1, 1), new Vector3(-1, 1, 1)),
+          new LineFrame3DSegment(
+            new Vector3(-1, -1, -1),
+            new Vector3(-1, -1, 1)
+          ),
+          new LineFrame3DSegment(new Vector3(1, -1, -1), new Vector3(1, -1, 1)),
+          new LineFrame3DSegment(new Vector3(-1, 1, -1), new Vector3(-1, 1, 1)),
+          new LineFrame3DSegment(new Vector3(1, 1, -1), new Vector3(1, 1, 1))
         ]
       });
       if (coreRenderContext.mainCanvas) {
@@ -5876,20 +5930,31 @@
 
   // white-dwarf/src/Editor/System/EditorInspectorSystem.ts
   var updateEntityInspector = (entity) => {
-    if (EditorViewPort2DSystem.inspectEntity) {
-      EditorViewPort2DSystem.inspectEntity.removeComponent(EditorSelectedTag);
-    }
-    EditorViewPort2DSystem.inspectEntity = entity;
-    if (EditorViewPort2DSystem.inspectEntity) {
-      EditorViewPort2DSystem.inspectEntity.addComponent(EditorSelectedTag);
-    }
     if (entity == null ? void 0 : entity.hasComponent(TransformData2D)) {
+      if (EditorViewPort2DSystem.inspectEntity) {
+        EditorViewPort2DSystem.inspectEntity.removeComponent(EditorSelectedTag);
+      }
+      EditorViewPort2DSystem.inspectEntity = entity;
+      if (EditorViewPort2DSystem.inspectEntity) {
+        EditorViewPort2DSystem.inspectEntity.addComponent(EditorSelectedTag);
+      }
       EditorViewPort2DSystem.inspectTransform = entity.getComponent(
         TransformData2D
       );
     } else if (entity == null ? void 0 : entity.hasComponent(TransformData3D)) {
+      if (EditorViewPort3DSystem.inspectEntity) {
+        EditorViewPort3DSystem.inspectEntity.removeComponent(EditorSelectedTag);
+      }
+      EditorViewPort3DSystem.inspectEntity = entity;
+      if (EditorViewPort3DSystem.inspectEntity) {
+        EditorViewPort3DSystem.inspectEntity.addComponent(EditorSelectedTag);
+      }
+      EditorViewPort3DSystem.inspectTransform = entity.getComponent(
+        TransformData3D
+      );
     } else {
       EditorViewPort2DSystem.inspectTransform = null;
+      EditorViewPort3DSystem.inspectTransform = null;
     }
     displayEntityInspector(entity);
   };
