@@ -5089,8 +5089,9 @@
     orthographicWorldToCamera(camTransform, camData) {
       const worldToCamera = mat4_exports.create();
       mat4_exports.invert(worldToCamera, this.objectToWorld(camTransform));
+      const orthographic = mat4_exports.create();
       mat4_exports.ortho(
-        worldToCamera,
+        orthographic,
         camData.left,
         camData.right,
         camData.bottom,
@@ -5098,6 +5099,7 @@
         camData.near,
         camData.far
       );
+      mat4_exports.multiply(worldToCamera, orthographic, worldToCamera);
       return worldToCamera;
     }
     perspectiveWorldToCamera(camTransform, camData) {
@@ -5131,7 +5133,11 @@
         this.mainCanvas.height / 2,
         0
       ]);
-      mat4_exports.scale(this.cameraToScreen, this.cameraToScreen, [100, 100, 1]);
+      mat4_exports.scale(this.cameraToScreen, this.cameraToScreen, [
+        this.mainCanvas.width,
+        this.mainCanvas.height,
+        1
+      ]);
     }
     generateWorldToCameraMatrix() {
       const canvasSize = vec2_exports.fromValues(
@@ -5197,7 +5203,9 @@
           vec3_exports.transformMat4(startPoint, segment.p0.value, objectToScreen);
           const endPoint = vec3_exports.create();
           vec3_exports.transformMat4(endPoint, segment.p1.value, objectToScreen);
-          this.drawLine(startPoint, endPoint, "black", 1);
+          if (startPoint[2] > 1 && endPoint[2] > 1) {
+            this.drawLine(startPoint, endPoint, "black", 1);
+          }
         });
       });
     }
@@ -5331,7 +5339,9 @@
     systemContext.editorStart = () => {
       mainWorld.createEntity("Editor Main Camera").addComponent(TransformData3D, {
         position: new Vector3(0, 0, -10)
-      }).addComponent(PerspectiveCameraData3D).addComponent(MainCameraTag);
+      }).addComponent(PerspectiveCameraData3D, {
+        fov: Math.PI / 2
+      }).addComponent(MainCameraTag);
       mainWorld.createEntity("Line Segment Render").addComponent(TransformData3D).addComponent(LineFrameRenderData3D, {
         segments: [
           new LineFrame3DSegment(

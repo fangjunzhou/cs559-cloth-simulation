@@ -30,7 +30,9 @@ export const main = () => {
       .addComponent(TransformData3D, {
         position: new Vector3(0, 0, -10),
       })
-      .addComponent(PerspectiveCameraData3D)
+      .addComponent(PerspectiveCameraData3D, {
+        fov: Math.PI / 2,
+      })
       .addComponent(MainCameraTag);
 
     // Add a line segment render entity.
