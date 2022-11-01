@@ -1,0 +1,3 @@
+[submodule "white-dwarf"]
+	path = white-dwarf
+	url = git@github.com:Fangjun-Zhou/White-Dwarf.git

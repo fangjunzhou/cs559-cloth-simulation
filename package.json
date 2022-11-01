@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "esbuild src/index.ts --bundle --outfile=dist/release.js",
+    "watch-editor": "esbuild src/editor.ts --bundle --sourcemap --outfile=dist/editor.js --watch",
+    "watch-release": "esbuild src/release.ts --bundle --sourcemap --outfile=dist/release.js --watch"
   },
   "repository": {
     "type": "git",
@@ -15,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/Fangjun-Zhou/cs559-cloth-simulation/issues"
   },
-  "homepage": "https://github.com/Fangjun-Zhou/cs559-cloth-simulation#readme"
+  "homepage": "https://github.com/Fangjun-Zhou/cs559-cloth-simulation#readme",
+  "dependencies": {
+    "esbuild": "^0.15.12"
+  }
 }
