@@ -5116,14 +5116,22 @@
       mat4_exports.multiply(worldToCamera, perspective2, worldToCamera);
       return worldToCamera;
     }
-    objectToWorld(transform) {
+    objectToWorld(transform, dropScale = false) {
       const objectToWorld = mat4_exports.create();
-      mat4_exports.fromRotationTranslationScale(
-        objectToWorld,
-        transform.rotation.value,
-        transform.position.value,
-        transform.scale.value
-      );
+      if (dropScale) {
+        mat4_exports.fromRotationTranslation(
+          objectToWorld,
+          transform.rotation.value,
+          transform.position.value
+        );
+      } else {
+        mat4_exports.fromRotationTranslationScale(
+          objectToWorld,
+          transform.rotation.value,
+          transform.position.value,
+          transform.scale.value
+        );
+      }
       return objectToWorld;
     }
     generateCameraToScreenMatrix() {
@@ -5250,6 +5258,25 @@
     }
   };
 
+  // white-dwarf/src/Editor/EditorContext.ts
+  var editorUIContext = {
+    entityLists: null,
+    entityInspector: null,
+    playButton: null,
+    entityNameInput: null,
+    createEntityButton: null,
+    deserializeEntityButton: null,
+    saveWorldButton: null,
+    loadWorldButton: null,
+    editorModeDropdown: null
+  };
+  var editorEventContext = {
+    onEntitySelected: []
+  };
+  var editorControlContext = {
+    controlMode: 1 /* Move */
+  };
+
   // white-dwarf/src/Mathematics/Vector2.ts
   var Vector2 = class {
     constructor(x, y) {
@@ -5311,6 +5338,8 @@
 
   // white-dwarf/src/Utils/System/Cam3DDragSystem.ts
   var rotateSensitive = 0.1;
+  var moveSensitive = 7;
+  var zoomSensitive = 0.5;
   var Cam3DDragSystem = class extends System {
     constructor() {
       super(...arguments);
@@ -5334,6 +5363,26 @@
           );
         }
       });
+      this.mainCanvas.addEventListener("mousemove", (event) => {
+        if (event.buttons === 4 || editorControlContext.controlMode === 0 /* View */ && event.buttons === 1) {
+          vec3_exports.add(
+            this.deltaPos.value,
+            this.deltaPos.value,
+            vec3_exports.fromValues(
+              event.movementX * rotateSensitive * moveSensitive,
+              event.movementY * rotateSensitive * moveSensitive,
+              0
+            )
+          );
+        }
+      });
+      this.mainCanvas.addEventListener("wheel", (event) => {
+        vec3_exports.add(
+          this.deltaPos.value,
+          this.deltaPos.value,
+          vec3_exports.fromValues(0, 0, event.deltaY * zoomSensitive)
+        );
+      });
     }
     execute(delta, time) {
       if (this.queries.perspectiveMainCamera.results.length + this.queries.orthographicMainCamera.results.length === 0) {
@@ -5348,6 +5397,8 @@
       vec3_exports.transformQuat(front, front, mainCameraTransform.rotation.value);
       const right = vec3_exports.fromValues(1, 0, 0);
       vec3_exports.transformQuat(right, right, mainCameraTransform.rotation.value);
+      const up = vec3_exports.fromValues(0, 1, 0);
+      vec3_exports.transformQuat(up, up, mainCameraTransform.rotation.value);
       const rotX = quat_exports.create();
       quat_exports.rotateY(rotX, rotX, this.deltaRot.value[0] * delta);
       const rotY = quat_exports.create();
@@ -5359,7 +5410,23 @@
         rot,
         mainCameraTransform.rotation.value
       );
+      vec3_exports.add(
+        mainCameraTransform.position.value,
+        mainCameraTransform.position.value,
+        vec3_exports.scale(vec3_exports.create(), front, this.deltaPos.value[2] * delta)
+      );
+      vec3_exports.add(
+        mainCameraTransform.position.value,
+        mainCameraTransform.position.value,
+        vec3_exports.scale(vec3_exports.create(), right, this.deltaPos.value[0] * delta)
+      );
+      vec3_exports.add(
+        mainCameraTransform.position.value,
+        mainCameraTransform.position.value,
+        vec3_exports.scale(vec3_exports.create(), up, this.deltaPos.value[1] * delta)
+      );
       vec2_exports.set(this.deltaRot.value, 0, 0);
+      vec3_exports.set(this.deltaPos.value, 0, 0, 0);
     }
   };
   Cam3DDragSystem.queries = {
@@ -5371,9 +5438,55 @@
     }
   };
 
+  // white-dwarf/src/Editor/TagComponent/EditorSceneCamTag.ts
+  var EditorSceneCamTag = class extends TagComponent {
+  };
+  EditorSceneCamTag = __decorateClass([
+    IComponent.register
+  ], EditorSceneCamTag);
+
   // white-dwarf/src/Editor/System/EditorViewPort3DSystem.ts
+  var moveControlThreshold = 30;
   var _EditorViewPort3DSystem = class extends Canvas3DRenderer {
+    constructor() {
+      super(...arguments);
+      this.mousePosition = vec2_exports.create();
+      this.mouseDelta = vec2_exports.create();
+      this.mouseInCanvas = false;
+      this.highlightAxis = null;
+      this.movingAxis = null;
+    }
+    init(attributes) {
+      super.init(attributes);
+      this.mainCanvas.addEventListener("mousemove", (event) => {
+        this.mousePosition = this.getMousePos(event);
+        vec2_exports.add(
+          this.mouseDelta,
+          this.mouseDelta,
+          vec2_exports.fromValues(event.movementX, event.movementY)
+        );
+      });
+      this.mainCanvas.addEventListener("mouseenter", () => {
+        this.mouseInCanvas = true;
+      });
+      this.mainCanvas.addEventListener("mouseleave", () => {
+        this.mouseInCanvas = false;
+      });
+      this.mainCanvas.addEventListener("mousedown", (event) => {
+        if (event.button == 0) {
+          if (this.highlightAxis) {
+            this.movingAxis = this.highlightAxis;
+          }
+        }
+      });
+      this.mainCanvas.addEventListener("mouseup", (event) => {
+        if (event.button == 0) {
+          this.movingAxis = null;
+        }
+      });
+    }
     execute(delta, time) {
+      var _a;
       try {
         super.execute(delta, time);
       } catch (error) {
@@ -5382,14 +5495,115 @@
       }
       this.generateWorldToCameraMatrix();
       this.generateCameraToScreenMatrix();
-      if (_EditorViewPort3DSystem.inspectTransform) {
+      if (editorControlContext.controlMode == 1 /* Move */ && _EditorViewPort3DSystem.inspectTransform && !((_a = _EditorViewPort3DSystem.inspectEntity) == null ? void 0 : _a.hasComponent(EditorSceneCamTag))) {
         const objectToWorld = this.objectToWorld(
-          _EditorViewPort3DSystem.inspectTransform
+          _EditorViewPort3DSystem.inspectTransform,
+          true
         );
         const objectToScreen = mat4_exports.create();
         mat4_exports.multiply(objectToScreen, this.worldToCamera, objectToWorld);
         mat4_exports.multiply(objectToScreen, this.cameraToScreen, objectToScreen);
         this.drawAxis(objectToScreen);
+        const startPoint = vec3_exports.create();
+        vec3_exports.transformMat4(startPoint, [0, 0, 0], objectToScreen);
+        const endPointX = vec3_exports.create();
+        vec3_exports.transformMat4(endPointX, [1, 0, 0], objectToScreen);
+        const endPointY = vec3_exports.create();
+        vec3_exports.transformMat4(endPointY, [0, 1, 0], objectToScreen);
+        const endPointZ = vec3_exports.create();
+        vec3_exports.transformMat4(endPointZ, [0, 0, 1], objectToScreen);
+        if (this.mouseInCanvas) {
+          const xDistance = vec2_exports.distance(
+            this.mousePosition,
+            vec2_exports.fromValues(endPointX[0], endPointX[1])
+          );
+          const yDistance = vec2_exports.distance(
+            this.mousePosition,
+            vec2_exports.fromValues(endPointY[0], endPointY[1])
+          );
+          const zDistance = vec2_exports.distance(
+            this.mousePosition,
+            vec2_exports.fromValues(endPointZ[0], endPointZ[1])
+          );
+          const minDistance = Math.min(xDistance, yDistance, zDistance);
+          if (minDistance < moveControlThreshold) {
+            if (minDistance == xDistance) {
+              this.canvasContext.strokeStyle = "red";
+              this.canvasContext.beginPath();
+              this.canvasContext.arc(
+                endPointX[0],
+                endPointX[1],
+                moveControlThreshold,
+                0,
+                2 * Math.PI
+              );
+              this.canvasContext.stroke();
+              this.highlightAxis = "x";
+            } else if (minDistance == yDistance) {
+              this.canvasContext.strokeStyle = "green";
+              this.canvasContext.beginPath();
+              this.canvasContext.arc(
+                endPointY[0],
+                endPointY[1],
+                moveControlThreshold,
+                0,
+                2 * Math.PI
+              );
+              this.canvasContext.stroke();
+              this.highlightAxis = "y";
+            } else if (minDistance == zDistance) {
+              this.canvasContext.strokeStyle = "blue";
+              this.canvasContext.beginPath();
+              this.canvasContext.arc(
+                endPointZ[0],
+                endPointZ[1],
+                moveControlThreshold,
+                0,
+                2 * Math.PI
+              );
+              this.canvasContext.stroke();
+              this.highlightAxis = "z";
+            } else {
+              this.highlightAxis = null;
+            }
+          }
+          if (this.movingAxis) {
+            switch (this.movingAxis) {
+              case "x":
+                this.moveAxis(endPointX, startPoint, 0);
+                break;
+              case "y":
+                this.moveAxis(endPointY, startPoint, 1);
+                break;
+              case "z":
+                this.moveAxis(endPointZ, startPoint, 2);
+                break;
+              default:
+                break;
+            }
+          }
+        }
+      }
+      vec2_exports.set(this.mouseDelta, 0, 0);
+    }
+    moveAxis(axisEndPoint, startPoint, axisIndex) {
+      var _a;
+      const axisDir = vec2_exports.create();
+      vec2_exports.sub(
+        axisDir,
+        vec2_exports.fromValues(axisEndPoint[0], axisEndPoint[1]),
+        vec2_exports.fromValues(startPoint[0], startPoint[1])
+      );
+      let axisMove = vec2_exports.dot(
+        axisDir,
+        vec2_exports.fromValues(this.mouseDelta[0], this.mouseDelta[1])
+      );
+      axisMove = axisMove / Math.pow(vec2_exports.length(axisDir), 2);
+      if (_EditorViewPort3DSystem.inspectTransform) {
+        _EditorViewPort3DSystem.inspectTransform.position.value[axisIndex] += axisMove;
+        (_a = _EditorViewPort3DSystem.inspectEntity) == null ? void 0 : _a.getMutableComponent(
+          TransformData3D
+        );
       }
     }
     drawAxis(objectToScreen) {
@@ -5404,6 +5618,10 @@
       this.drawLine(startPoint, endPointX, "red", 1);
       this.drawLine(startPoint, endPointY, "green", 1);
       this.drawLine(startPoint, endPointZ, "blue", 1);
+    }
+    getMousePos(event) {
+      const rect = this.mainCanvas.getBoundingClientRect();
+      return vec2_exports.fromValues(event.clientX - rect.left, event.clientY - rect.top);
     }
   };
   var EditorViewPort3DSystem = _EditorViewPort3DSystem;
@@ -5423,13 +5641,6 @@
       this.mainCanvas = mainCanvas;
     }
   };
-
-  // white-dwarf/src/Editor/TagComponent/EditorSceneCamTag.ts
-  var EditorSceneCamTag = class extends TagComponent {
-  };
-  EditorSceneCamTag = __decorateClass([
-    IComponent.register
-  ], EditorSceneCamTag);
 
   // white-dwarf/src/Editor/System/EditorCamTagAppendSystem.ts
   var EditorCamTagAppendSystem = class extends System {
@@ -5600,21 +5811,6 @@
         EntitySerializer.deserializeEntity(world, entityObject);
       });
     }
-  };
-
-  // white-dwarf/src/Editor/EditorContext.ts
-  var editorUIContext = {
-    entityLists: null,
-    entityInspector: null,
-    playButton: null,
-    entityNameInput: null,
-    createEntityButton: null,
-    deserializeEntityButton: null,
-    saveWorldButton: null,
-    loadWorldButton: null
-  };
-  var editorEventContext = {
-    onEntitySelected: []
   };
 
   // white-dwarf/src/Editor/EditorEntityListManager.ts
@@ -6023,7 +6219,7 @@
       if (EditorViewPort3DSystem.inspectEntity) {
         EditorViewPort3DSystem.inspectEntity.addComponent(EditorSelectedTag);
       }
-      EditorViewPort3DSystem.inspectTransform = entity.getComponent(
+      EditorViewPort3DSystem.inspectTransform = entity.getMutableComponent(
         TransformData3D
       );
     } else {
@@ -6205,6 +6401,9 @@
     editorUIContext.loadWorldButton = document.getElementById(
       "loadWorldButton"
     );
+    editorUIContext.editorModeDropdown = document.getElementById(
+      "editorMode"
+    );
     coreRenderContext.mainCanvas.oncontextmenu = () => false;
     mainWorld.onEntityChanged.push(updateEntityList);
     editorEventContext.onEntitySelected.push(updateEntityInspector);
@@ -6214,6 +6413,7 @@
     setupCreateEntityButton();
     setupDeserializeEntityInput();
     setupSaveLoadWorldButton();
+    setupEditorModeDropdown();
     mainInit();
     onResize();
   };
@@ -6304,6 +6504,22 @@
       input.click();
     });
   };
+  function setupEditorModeDropdown() {
+    var _a;
+    (_a = editorUIContext.editorModeDropdown) == null ? void 0 : _a.addEventListener("change", (e) => {
+      const value = e.target.value;
+      switch (value) {
+        case "view":
+          editorControlContext.controlMode = 0 /* View */;
+          break;
+        case "move":
+          editorControlContext.controlMode = 1 /* Move */;
+          break;
+        default:
+          break;
+      }
+    });
+  }
   var editorPlay = () => __async(void 0, null, function* () {
     worldData = WorldSerializer.serializeWorld(mainWorld);
     resetWorld();
