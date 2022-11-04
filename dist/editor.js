@@ -4620,230 +4620,6 @@
     IComponent.register
   ], TransformData3D);
 
-  // white-dwarf/src/Mathematics/LineFrame3DSegment.ts
-  var LineFrame3DSegment = class {
-    constructor(p0, p1) {
-      this.p0 = p0;
-      this.p1 = p1;
-    }
-    set(p0, p1) {
-      this.p0 = p0;
-      this.p1 = p1;
-    }
-    copy(h) {
-      this.p0 = h.p0.clone();
-      this.p1 = h.p1.clone();
-      return this;
-    }
-    clone() {
-      return new LineFrame3DSegment(this.p0.clone(), this.p1.clone());
-    }
-  };
-  var LineFrame3DSegmentType = createType({
-    name: "LineFrame3DSegment",
-    default: new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(0, 0, 0)),
-    copy: copyCopyable,
-    clone: cloneClonable
-  });
-  var LineFrame3DSegmentEditor = (segment, onChange) => {
-    const el = document.createElement("div");
-    const p0 = document.createElement("div");
-    const p1 = document.createElement("div");
-    el.appendChild(p0);
-    el.appendChild(p1);
-    p0.innerText = "p0";
-    p1.innerText = "p1";
-    p0.appendChild(
-      Vector3CustomEditor(segment.p0, (v) => {
-        segment.p0 = v;
-        onChange(segment);
-      })[0]
-    );
-    p1.appendChild(
-      Vector3CustomEditor(segment.p1, (v) => {
-        segment.p1 = v;
-        onChange(segment);
-      })[0]
-    );
-    return el;
-  };
-
-  // white-dwarf/src/Core/Render/DataComponent/LineFrameRenderData3D.ts
-  var LineFrameRenderData3D = class extends Component {
-    constructor() {
-      super(...arguments);
-      this.segments = [];
-      this.useDefaultInspector = false;
-      this.onInspector = (componentDiv) => {
-        const curveSegmentsDiv = document.createElement("div");
-        curveSegmentsDiv.style.display = "flex";
-        curveSegmentsDiv.style.flexDirection = "column";
-        this.populateSegmentEditor(curveSegmentsDiv);
-        this.eventEmitter.on(COMPONENT_CHANGE_EVENT, (component) => {
-          this.RepopulateCurveUI(curveSegmentsDiv);
-        });
-        componentDiv.appendChild(curveSegmentsDiv);
-        const addCurveSegmentButton = document.createElement("button");
-        addCurveSegmentButton.innerText = "Add Curve Segment";
-        addCurveSegmentButton.onclick = () => {
-          this.segments.push(
-            new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(0, 0, 0))
-          );
-          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
-        };
-        componentDiv.appendChild(addCurveSegmentButton);
-      };
-    }
-    RepopulateCurveUI(curveSegmentsDiv) {
-      curveSegmentsDiv.innerHTML = "";
-      this.populateSegmentEditor(curveSegmentsDiv);
-    }
-    populateSegmentEditor(curveSegmentsDiv) {
-      this.segments.forEach((segment, index) => {
-        const segmentDiv = document.createElement("div");
-        segmentDiv.style.display = "flex";
-        segmentDiv.style.flexDirection = "column";
-        segmentDiv.style.border = "1px solid black";
-        segmentDiv.appendChild(document.createTextNode(`Segment ${index}`));
-        const segmentEditor = LineFrame3DSegmentEditor(segment, (value) => {
-          this.segments[index] = value;
-          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
-        });
-        segmentDiv.appendChild(segmentEditor);
-        const removeSegmentButton = document.createElement("button");
-        removeSegmentButton.appendChild(document.createTextNode("Remove"));
-        removeSegmentButton.onclick = () => {
-          this.segments.splice(index, 1);
-          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
-        };
-        segmentDiv.appendChild(removeSegmentButton);
-        curveSegmentsDiv.appendChild(segmentDiv);
-      });
-    }
-  };
-  LineFrameRenderData3D.schema = {
-    segments: {
-      type: Types.Array,
-      default: []
-    }
-  };
-  LineFrameRenderData3D = __decorateClass([
-    IComponent.register
-  ], LineFrameRenderData3D);
-
-  // white-dwarf/src/Core/Render/DataComponent/PerspectiveCameraData3D.ts
-  var PerspectiveCameraData3D = class extends Component {
-    constructor() {
-      super(...arguments);
-      this.useDefaultInspector = false;
-      this.onInspector = (componentDiv) => {
-        const fovDiv = document.createElement("div");
-        fovDiv.style.display = "flex";
-        fovDiv.style.flexDirection = "row";
-        fovDiv.appendChild(document.createTextNode("fov: "));
-        const fovSlider = document.createElement("input");
-        fovSlider.type = "range";
-        fovSlider.min = "0";
-        fovSlider.max = "3.14";
-        fovSlider.step = "0.01";
-        fovSlider.value = this.fov.toString();
-        fovSlider.style.flex = "1";
-        fovSlider.addEventListener("change", (event) => {
-          this.fov = parseFloat(fovSlider.value);
-          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
-        });
-        this.eventEmitter.on(COMPONENT_CHANGE_EVENT, () => {
-          if (document.activeElement !== fovSlider) {
-            fovSlider.value = this.fov.toString();
-          }
-        });
-        fovDiv.appendChild(fovSlider);
-        const aspectDiv = document.createElement("div");
-        aspectDiv.style.display = "flex";
-        aspectDiv.style.flexDirection = "row";
-        aspectDiv.appendChild(document.createTextNode("aspect: "));
-        const aspectInput = document.createElement("input");
-        aspectInput.type = "number";
-        aspectInput.value = this.aspect.toString();
-        aspectInput.style.minWidth = "0px";
-        aspectInput.style.flex = "1";
-        aspectInput.addEventListener("change", (event) => {
-          this.aspect = parseFloat(aspectInput.value);
-          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
-        });
-        this.eventEmitter.on(COMPONENT_CHANGE_EVENT, () => {
-          if (document.activeElement !== aspectInput) {
-            aspectInput.value = this.aspect.toString();
-          }
-        });
-        aspectDiv.appendChild(aspectInput);
-        const nearDiv = document.createElement("div");
-        nearDiv.style.display = "flex";
-        nearDiv.style.flexDirection = "row";
-        nearDiv.appendChild(document.createTextNode("near: "));
-        const nearInput = document.createElement("input");
-        nearInput.type = "number";
-        nearInput.value = this.near.toString();
-        nearInput.style.minWidth = "0px";
-        nearInput.style.flex = "1";
-        nearInput.addEventListener("change", (event) => {
-          this.near = parseFloat(nearInput.value);
-          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
-        });
-        this.eventEmitter.on(COMPONENT_CHANGE_EVENT, () => {
-          if (document.activeElement !== nearInput) {
-            nearInput.value = this.near.toString();
-          }
-        });
-        nearDiv.appendChild(nearInput);
-        const farDiv = document.createElement("div");
-        farDiv.style.display = "flex";
-        farDiv.style.flexDirection = "row";
-        farDiv.appendChild(document.createTextNode("far: "));
-        const farInput = document.createElement("input");
-        farInput.type = "number";
-        farInput.value = this.far.toString();
-        farInput.style.minWidth = "0px";
-        farInput.style.flex = "1";
-        farInput.addEventListener("change", (event) => {
-          this.far = parseFloat(farInput.value);
-          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
-        });
-        this.eventEmitter.on(COMPONENT_CHANGE_EVENT, () => {
-          if (document.activeElement !== farInput) {
-            farInput.value = this.far.toString();
-          }
-        });
-        farDiv.appendChild(farInput);
-        componentDiv.appendChild(fovDiv);
-        componentDiv.appendChild(aspectDiv);
-        componentDiv.appendChild(nearDiv);
-        componentDiv.appendChild(farDiv);
-      };
-    }
-  };
-  PerspectiveCameraData3D.schema = {
-    fov: {
-      type: Types.Number,
-      default: Math.PI / 4
-    },
-    aspect: {
-      type: Types.Number,
-      default: 1
-    },
-    near: {
-      type: Types.Number,
-      default: 0.1
-    },
-    far: {
-      type: Types.Number,
-      default: 1e3
-    }
-  };
-  PerspectiveCameraData3D = __decorateClass([
-    IComponent.register
-  ], PerspectiveCameraData3D);
-
   // white-dwarf/submodules/ecsy/src/System.js
   var System = class {
     canExecute() {
@@ -5017,6 +4793,306 @@
   System.getName = function() {
     return this.displayName || this.name;
   };
+
+  // white-dwarf/src/Core/Physics/DataComponents/EulerVelocityData3D.ts
+  var EulerVelocityData3D = class extends Component {
+  };
+  EulerVelocityData3D.schema = {
+    velocity: {
+      type: Vector3Type,
+      default: new Vector3(0, 0, 0)
+    }
+  };
+  EulerVelocityData3D = __decorateClass([
+    IComponent.register
+  ], EulerVelocityData3D);
+
+  // white-dwarf/src/Core/Physics/Systems/EulerVelocity3DGravitySystem.ts
+  var GRAVITY_ACCELERATION = 9.8;
+  var EulerVelocityGravitySystem = class extends System {
+    execute(delta, time) {
+      this.queries.gravityTargets.results.forEach((target) => {
+        const velocity = target.getMutableComponent(
+          EulerVelocityData3D
+        );
+        let acceleration = vec3_exports.fromValues(0, -GRAVITY_ACCELERATION, 0);
+        vec3_exports.scale(acceleration, acceleration, delta);
+        vec3_exports.add(velocity.velocity.value, velocity.velocity.value, acceleration);
+      });
+    }
+  };
+  EulerVelocityGravitySystem.queries = {
+    gravityTargets: {
+      components: [EulerVelocityData3D]
+    }
+  };
+
+  // white-dwarf/src/Core/Physics/Systems/EulerVelocity3DMoveSystem.ts
+  var EulerVelocity3DMoveSystem = class extends System {
+    execute(delta, time) {
+      this.queries.moveTargets.results.forEach((target) => {
+        const eulerVelocity = target.getComponent(
+          EulerVelocityData3D
+        );
+        const transform = target.getMutableComponent(
+          TransformData3D
+        );
+        const deltaD = vec3_exports.create();
+        vec3_exports.scale(deltaD, eulerVelocity.velocity.value, delta);
+        vec3_exports.add(transform.position.value, transform.position.value, deltaD);
+      });
+    }
+  };
+  EulerVelocity3DMoveSystem.queries = {
+    moveTargets: {
+      components: [TransformData3D, EulerVelocityData3D]
+    }
+  };
+
+  // white-dwarf/src/Core/Render/DataComponent/PerspectiveCameraData3D.ts
+  var PerspectiveCameraData3D = class extends Component {
+    constructor() {
+      super(...arguments);
+      this.useDefaultInspector = false;
+      this.onInspector = (componentDiv) => {
+        const fovDiv = document.createElement("div");
+        fovDiv.style.display = "flex";
+        fovDiv.style.flexDirection = "row";
+        fovDiv.appendChild(document.createTextNode("fov: "));
+        const fovSlider = document.createElement("input");
+        fovSlider.type = "range";
+        fovSlider.min = "0";
+        fovSlider.max = "3.14";
+        fovSlider.step = "0.01";
+        fovSlider.value = this.fov.toString();
+        fovSlider.style.flex = "1";
+        fovSlider.addEventListener("change", (event) => {
+          this.fov = parseFloat(fovSlider.value);
+          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
+        });
+        this.eventEmitter.on(COMPONENT_CHANGE_EVENT, () => {
+          if (document.activeElement !== fovSlider) {
+            fovSlider.value = this.fov.toString();
+          }
+        });
+        fovDiv.appendChild(fovSlider);
+        const aspectDiv = document.createElement("div");
+        aspectDiv.style.display = "flex";
+        aspectDiv.style.flexDirection = "row";
+        aspectDiv.appendChild(document.createTextNode("aspect: "));
+        const aspectInput = document.createElement("input");
+        aspectInput.type = "number";
+        aspectInput.value = this.aspect.toString();
+        aspectInput.style.minWidth = "0px";
+        aspectInput.style.flex = "1";
+        aspectInput.addEventListener("change", (event) => {
+          this.aspect = parseFloat(aspectInput.value);
+          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
+        });
+        this.eventEmitter.on(COMPONENT_CHANGE_EVENT, () => {
+          if (document.activeElement !== aspectInput) {
+            aspectInput.value = this.aspect.toString();
+          }
+        });
+        aspectDiv.appendChild(aspectInput);
+        const nearDiv = document.createElement("div");
+        nearDiv.style.display = "flex";
+        nearDiv.style.flexDirection = "row";
+        nearDiv.appendChild(document.createTextNode("near: "));
+        const nearInput = document.createElement("input");
+        nearInput.type = "number";
+        nearInput.value = this.near.toString();
+        nearInput.style.minWidth = "0px";
+        nearInput.style.flex = "1";
+        nearInput.addEventListener("change", (event) => {
+          this.near = parseFloat(nearInput.value);
+          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
+        });
+        this.eventEmitter.on(COMPONENT_CHANGE_EVENT, () => {
+          if (document.activeElement !== nearInput) {
+            nearInput.value = this.near.toString();
+          }
+        });
+        nearDiv.appendChild(nearInput);
+        const farDiv = document.createElement("div");
+        farDiv.style.display = "flex";
+        farDiv.style.flexDirection = "row";
+        farDiv.appendChild(document.createTextNode("far: "));
+        const farInput = document.createElement("input");
+        farInput.type = "number";
+        farInput.value = this.far.toString();
+        farInput.style.minWidth = "0px";
+        farInput.style.flex = "1";
+        farInput.addEventListener("change", (event) => {
+          this.far = parseFloat(farInput.value);
+          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
+        });
+        this.eventEmitter.on(COMPONENT_CHANGE_EVENT, () => {
+          if (document.activeElement !== farInput) {
+            farInput.value = this.far.toString();
+          }
+        });
+        farDiv.appendChild(farInput);
+        componentDiv.appendChild(fovDiv);
+        componentDiv.appendChild(aspectDiv);
+        componentDiv.appendChild(nearDiv);
+        componentDiv.appendChild(farDiv);
+      };
+    }
+  };
+  PerspectiveCameraData3D.schema = {
+    fov: {
+      type: Types.Number,
+      default: Math.PI / 4
+    },
+    aspect: {
+      type: Types.Number,
+      default: 1
+    },
+    near: {
+      type: Types.Number,
+      default: 0.1
+    },
+    far: {
+      type: Types.Number,
+      default: 1e3
+    }
+  };
+  PerspectiveCameraData3D = __decorateClass([
+    IComponent.register
+  ], PerspectiveCameraData3D);
+
+  // white-dwarf/src/Mathematics/LineFrame3DSegment.ts
+  var LineFrame3DSegment = class {
+    constructor(p0, p1) {
+      this.p0 = p0;
+      this.p1 = p1;
+    }
+    set(p0, p1) {
+      this.p0 = p0;
+      this.p1 = p1;
+    }
+    copy(h) {
+      this.p0 = h.p0.clone();
+      this.p1 = h.p1.clone();
+      return this;
+    }
+    clone() {
+      return new LineFrame3DSegment(this.p0.clone(), this.p1.clone());
+    }
+  };
+  var LineFrame3DSegmentType = createType({
+    name: "LineFrame3DSegment",
+    default: new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(0, 0, 0)),
+    copy: copyCopyable,
+    clone: cloneClonable
+  });
+  var LineFrame3DSegmentEditor = (segment, onChange) => {
+    const el = document.createElement("div");
+    const p0 = document.createElement("div");
+    const p1 = document.createElement("div");
+    el.appendChild(p0);
+    el.appendChild(p1);
+    p0.innerText = "p0";
+    p1.innerText = "p1";
+    p0.appendChild(
+      Vector3CustomEditor(segment.p0, (v) => {
+        segment.p0 = v;
+        onChange(segment);
+      })[0]
+    );
+    p1.appendChild(
+      Vector3CustomEditor(segment.p1, (v) => {
+        segment.p1 = v;
+        onChange(segment);
+      })[0]
+    );
+    return el;
+  };
+
+  // white-dwarf/src/Core/Render/DataComponent/LineFrameRenderData3D.ts
+  var LineFrameRenderData3D = class extends Component {
+    constructor() {
+      super(...arguments);
+      this.color = "black";
+      this.segments = [];
+      this.useDefaultInspector = false;
+      this.onInspector = (componentDiv) => {
+        const colorDiv = document.createElement("div");
+        colorDiv.style.display = "flex";
+        colorDiv.style.flexDirection = "row";
+        const colorLabel = document.createElement("label");
+        colorLabel.appendChild(document.createTextNode("Color: "));
+        colorDiv.appendChild(colorLabel);
+        const colorInput = document.createElement("input");
+        colorInput.type = "color";
+        colorInput.value = this.color;
+        colorInput.style.flexGrow = "1";
+        colorInput.onchange = () => {
+          this.color = colorInput.value;
+          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
+        };
+        colorDiv.appendChild(colorInput);
+        componentDiv.appendChild(colorDiv);
+        const curveSegmentsDiv = document.createElement("div");
+        curveSegmentsDiv.style.display = "flex";
+        curveSegmentsDiv.style.flexDirection = "column";
+        this.populateSegmentEditor(curveSegmentsDiv);
+        this.eventEmitter.on(COMPONENT_CHANGE_EVENT, (component) => {
+          this.RepopulateCurveUI(curveSegmentsDiv);
+        });
+        componentDiv.appendChild(curveSegmentsDiv);
+        const addCurveSegmentButton = document.createElement("button");
+        addCurveSegmentButton.innerText = "Add Curve Segment";
+        addCurveSegmentButton.onclick = () => {
+          this.segments.push(
+            new LineFrame3DSegment(new Vector3(0, 0, 0), new Vector3(0, 0, 0))
+          );
+          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
+        };
+        componentDiv.appendChild(addCurveSegmentButton);
+      };
+    }
+    RepopulateCurveUI(curveSegmentsDiv) {
+      curveSegmentsDiv.innerHTML = "";
+      this.populateSegmentEditor(curveSegmentsDiv);
+    }
+    populateSegmentEditor(curveSegmentsDiv) {
+      this.segments.forEach((segment, index) => {
+        const segmentDiv = document.createElement("div");
+        segmentDiv.style.display = "flex";
+        segmentDiv.style.flexDirection = "column";
+        segmentDiv.style.border = "1px solid black";
+        segmentDiv.appendChild(document.createTextNode(`Segment ${index}`));
+        const segmentEditor = LineFrame3DSegmentEditor(segment, (value) => {
+          this.segments[index] = value;
+          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
+        });
+        segmentDiv.appendChild(segmentEditor);
+        const removeSegmentButton = document.createElement("button");
+        removeSegmentButton.appendChild(document.createTextNode("Remove"));
+        removeSegmentButton.onclick = () => {
+          this.segments.splice(index, 1);
+          this.eventEmitter.emit(COMPONENT_CHANGE_EVENT, this);
+        };
+        segmentDiv.appendChild(removeSegmentButton);
+        curveSegmentsDiv.appendChild(segmentDiv);
+      });
+    }
+  };
+  LineFrameRenderData3D.schema = {
+    color: {
+      type: Types.String,
+      default: "black"
+    },
+    segments: {
+      type: Types.Array,
+      default: []
+    }
+  };
+  LineFrameRenderData3D = __decorateClass([
+    IComponent.register
+  ], LineFrameRenderData3D);
 
   // white-dwarf/src/Core/Render/DataComponent/OrthographicCameraData3D.ts
   var OrthographicCameraData3D = class extends Component {
@@ -5212,7 +5288,7 @@
           const endPoint = vec3_exports.create();
           vec3_exports.transformMat4(endPoint, segment.p1.value, objectToScreen);
           if (startPoint[2] > 1 && endPoint[2] > 1) {
-            this.drawLine(startPoint, endPoint, "black", 1);
+            this.drawLine(startPoint, endPoint, renderData.color, 1);
           }
         });
       });
@@ -5255,6 +5331,134 @@
         });
       };
       this.mainCanvas = mainCanvas;
+    }
+  };
+
+  // white-dwarf/src/Core/Render/TagComponent/MainCameraInitTag.ts
+  var MainCameraInitTag = class extends TagComponent {
+  };
+  MainCameraInitTag = __decorateClass([
+    IComponent.register
+  ], MainCameraInitTag);
+
+  // white-dwarf/src/Core/Render/System/MainCameraInitSystem.ts
+  var MainCameraInitSystem = class extends System {
+    execute(delta, time) {
+      this.queries.mainCameraInitEntities.results.forEach((entity) => {
+        entity.removeComponent(MainCameraInitTag);
+        entity.addComponent(MainCameraTag);
+      });
+    }
+  };
+  MainCameraInitSystem.queries = {
+    mainCameraInitEntities: {
+      components: [MainCameraInitTag],
+      listen: {
+        added: true
+      }
+    }
+  };
+
+  // white-dwarf/src/Editor/TagComponent/EditorSceneCamTag.ts
+  var EditorSceneCamTag = class extends TagComponent {
+  };
+  EditorSceneCamTag = __decorateClass([
+    IComponent.register
+  ], EditorSceneCamTag);
+
+  // white-dwarf/src/Editor/TagComponent/EditorSelectedTag.ts
+  var EditorSelectedTag = class extends TagComponent {
+  };
+  EditorSelectedTag = __decorateClass([
+    IComponent.register
+  ], EditorSelectedTag);
+
+  // white-dwarf/src/Core/Serialization/EntitySerializer.ts
+  var EntitySerializer = class {
+    constructor() {
+      this.entityData = null;
+    }
+    static serializeComponent(component) {
+      const componentObject = {
+        type: component.constructor.name,
+        data: {}
+      };
+      const componentSchema = Object.getPrototypeOf(component).constructor.schema;
+      const componentDataContent = {};
+      Object.keys(component).forEach((key) => {
+        if (Object.keys(componentSchema).includes(key) && componentSchema[key].type !== Types.Ref) {
+          componentDataContent[key] = component[key];
+        }
+      });
+      componentObject.data = componentDataContent;
+      return componentObject;
+    }
+    static serializeEntity(entity) {
+      const entityObject = {
+        name: entity.name,
+        id: entity.id,
+        components: {}
+      };
+      const components = entity.getComponents();
+      const componentIndices = Object.keys(components);
+      for (let j = 0; j < componentIndices.length; j++) {
+        const componentIndex = componentIndices[j];
+        const component = components[componentIndex];
+        if (component.constructor.name === EditorSelectedTag.name) {
+          continue;
+        }
+        const componentObject = EntitySerializer.serializeComponent(component);
+        entityObject.components[componentObject.type] = componentObject.data;
+      }
+      return entityObject;
+    }
+    static deserializeEntity(world, entityData, reserveId = false) {
+      const entity = world.getEntityById(entityData.id);
+      if (reserveId && entity && entity.alive) {
+        console.warn(
+          `Entity with id ${entityData.id} already exists. Skipping deserialization.`
+        );
+        return;
+      }
+      let newEntity;
+      if (reserveId) {
+        newEntity = world.createEntity(entityData.name, entityData.id);
+      } else {
+        newEntity = world.createEntity(entityData.name);
+      }
+      for (const componentName in entityData.components) {
+        const componentData = entityData.components[componentName];
+        const componentList = IComponent.getImplementations();
+        let component = componentList.find(
+          (component2) => component2.name === componentName
+        );
+        if (component) {
+          newEntity.addComponent(component, componentData);
+        } else {
+          console.error("Component not found.");
+        }
+      }
+    }
+  };
+
+  // white-dwarf/src/Core/Serialization/WorldSerializer.ts
+  var WorldSerializer = class {
+    static serializeWorld(world) {
+      const worldObject = {
+        entities: []
+      };
+      world.getAllEntities().forEach((entity) => {
+        if (entity.hasComponent(EditorSceneCamTag)) {
+          return;
+        }
+        worldObject.entities.push(EntitySerializer.serializeEntity(entity));
+      });
+      return worldObject;
+    }
+    static deserializeWorld(world, worldObject) {
+      worldObject.entities.forEach((entityObject) => {
+        EntitySerializer.deserializeEntity(world, entityObject);
+      });
     }
   };
 
@@ -5437,13 +5641,6 @@
       components: [MainCameraTag, OrthographicCameraData3D, TransformData3D]
     }
   };
-
-  // white-dwarf/src/Editor/TagComponent/EditorSceneCamTag.ts
-  var EditorSceneCamTag = class extends TagComponent {
-  };
-  EditorSceneCamTag = __decorateClass([
-    IComponent.register
-  ], EditorSceneCamTag);
 
   // white-dwarf/src/Editor/System/EditorViewPort3DSystem.ts
   var moveControlThreshold = 30;
@@ -5670,37 +5867,27 @@
         );
       }
     };
+    systemContext.coreStart = (props) => __async(void 0, null, function* () {
+      if (props.worldObject) {
+        WorldSerializer.deserializeWorld(mainWorld, props.worldObject);
+      } else {
+        const worldObject = yield fetch("assets/world.json").then(
+          (response) => response.json()
+        );
+        WorldSerializer.deserializeWorld(mainWorld, worldObject);
+      }
+      mainWorld.registerSystem(MainCameraInitSystem);
+      mainWorld.registerSystem(EulerVelocity3DMoveSystem).registerSystem(EulerVelocityGravitySystem);
+      mainWorld.registerSystem(Cam3DDragSystem, {
+        mainCanvas: coreRenderContext.mainCanvas
+      });
+    });
     systemContext.editorStart = () => {
       mainWorld.createEntity("Editor Main Camera").addComponent(TransformData3D, {
         position: new Vector3(0, 0, -10)
       }).addComponent(PerspectiveCameraData3D, {
         fov: Math.PI / 2
       }).addComponent(MainCameraTag);
-      mainWorld.createEntity("Line Segment Render").addComponent(TransformData3D).addComponent(LineFrameRenderData3D, {
-        segments: [
-          new LineFrame3DSegment(
-            new Vector3(-1, -1, -1),
-            new Vector3(1, -1, -1)
-          ),
-          new LineFrame3DSegment(
-            new Vector3(-1, -1, -1),
-            new Vector3(-1, 1, -1)
-          ),
-          new LineFrame3DSegment(new Vector3(1, 1, -1), new Vector3(1, -1, -1)),
-          new LineFrame3DSegment(new Vector3(1, 1, -1), new Vector3(-1, 1, -1)),
-          new LineFrame3DSegment(new Vector3(-1, -1, 1), new Vector3(1, -1, 1)),
-          new LineFrame3DSegment(new Vector3(-1, -1, 1), new Vector3(-1, 1, 1)),
-          new LineFrame3DSegment(new Vector3(1, 1, 1), new Vector3(1, -1, 1)),
-          new LineFrame3DSegment(new Vector3(1, 1, 1), new Vector3(-1, 1, 1)),
-          new LineFrame3DSegment(
-            new Vector3(-1, -1, -1),
-            new Vector3(-1, -1, 1)
-          ),
-          new LineFrame3DSegment(new Vector3(1, -1, -1), new Vector3(1, -1, 1)),
-          new LineFrame3DSegment(new Vector3(-1, 1, -1), new Vector3(-1, 1, 1)),
-          new LineFrame3DSegment(new Vector3(1, 1, -1), new Vector3(1, 1, 1))
-        ]
-      });
       if (coreRenderContext.mainCanvas) {
         new EditorSystem3DRegister(coreRenderContext.mainCanvas).register(
           mainWorld
@@ -5716,102 +5903,6 @@
 
   // white-dwarf/src/Editor/index.ts
   var import_js_file_download2 = __toESM(require_file_download());
-
-  // white-dwarf/src/Editor/TagComponent/EditorSelectedTag.ts
-  var EditorSelectedTag = class extends TagComponent {
-  };
-  EditorSelectedTag = __decorateClass([
-    IComponent.register
-  ], EditorSelectedTag);
-
-  // white-dwarf/src/Core/Serialization/EntitySerializer.ts
-  var EntitySerializer = class {
-    constructor() {
-      this.entityData = null;
-    }
-    static serializeComponent(component) {
-      const componentObject = {
-        type: component.constructor.name,
-        data: {}
-      };
-      const componentSchema = Object.getPrototypeOf(component).constructor.schema;
-      const componentDataContent = {};
-      Object.keys(component).forEach((key) => {
-        if (Object.keys(componentSchema).includes(key) && componentSchema[key].type !== Types.Ref) {
-          componentDataContent[key] = component[key];
-        }
-      });
-      componentObject.data = componentDataContent;
-      return componentObject;
-    }
-    static serializeEntity(entity) {
-      const entityObject = {
-        name: entity.name,
-        id: entity.id,
-        components: {}
-      };
-      const components = entity.getComponents();
-      const componentIndices = Object.keys(components);
-      for (let j = 0; j < componentIndices.length; j++) {
-        const componentIndex = componentIndices[j];
-        const component = components[componentIndex];
-        if (component.constructor.name === EditorSelectedTag.name) {
-          continue;
-        }
-        const componentObject = EntitySerializer.serializeComponent(component);
-        entityObject.components[componentObject.type] = componentObject.data;
-      }
-      return entityObject;
-    }
-    static deserializeEntity(world, entityData, reserveId = false) {
-      const entity = world.getEntityById(entityData.id);
-      if (reserveId && entity && entity.alive) {
-        console.warn(
-          `Entity with id ${entityData.id} already exists. Skipping deserialization.`
-        );
-        return;
-      }
-      let newEntity;
-      if (reserveId) {
-        newEntity = world.createEntity(entityData.name, entityData.id);
-      } else {
-        newEntity = world.createEntity(entityData.name);
-      }
-      for (const componentName in entityData.components) {
-        const componentData = entityData.components[componentName];
-        const componentList = IComponent.getImplementations();
-        let component = componentList.find(
-          (component2) => component2.name === componentName
-        );
-        if (component) {
-          newEntity.addComponent(component, componentData);
-        } else {
-          console.error("Component not found.");
-        }
-      }
-    }
-  };
-
-  // white-dwarf/src/Core/Serialization/WorldSerializer.ts
-  var WorldSerializer = class {
-    static serializeWorld(world) {
-      const worldObject = {
-        entities: []
-      };
-      world.getAllEntities().forEach((entity) => {
-        if (entity.hasComponent(EditorSceneCamTag)) {
-          return;
-        }
-        worldObject.entities.push(EntitySerializer.serializeEntity(entity));
-      });
-      return worldObject;
-    }
-    static deserializeWorld(world, worldObject) {
-      worldObject.entities.forEach((entityObject) => {
-        EntitySerializer.deserializeEntity(world, entityObject);
-      });
-    }
-  };
 
   // white-dwarf/src/Editor/EditorEntityListManager.ts
   var updateEntityList = (entities) => {
