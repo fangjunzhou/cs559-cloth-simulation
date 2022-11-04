@@ -1,4 +1,4 @@
-import { mainWorld } from "white-dwarf/Core";
+import { mainWorld, physicsWorld } from "white-dwarf/Core";
 import { coreRenderContext } from "white-dwarf/Core/Context/RenderContext";
 import { CoreStartProps } from "white-dwarf/Core/Context/SystemContext";
 import { systemContext } from "white-dwarf/Core/CoreSetup";
@@ -6,6 +6,10 @@ import { TransformData2D } from "white-dwarf/Core/Locomotion/DataComponent/Trans
 import { TransformData3D } from "white-dwarf/Core/Locomotion/DataComponent/TransformData3D";
 import { EulerVelocityGravitySystem } from "white-dwarf/Core/Physics/Systems/EulerVelocity3DGravitySystem";
 import { EulerVelocity3DMoveSystem } from "white-dwarf/Core/Physics/Systems/EulerVelocity3DMoveSystem";
+import { MainWorldTransformSyncSystem } from "white-dwarf/Core/Physics/Systems/MainWorldTransformSyncSystem";
+import { PhysicsWorldTransformSyncSystem } from "white-dwarf/Core/Physics/Systems/PhysicsWorldTransformSyncSystem";
+import { VerletVelocity3DGravitySystem } from "white-dwarf/Core/Physics/Systems/VerletVelocity3DGravitySystem";
+import { VerletVelocity3DMoveSystem } from "white-dwarf/Core/Physics/Systems/VerletVelocity3DMoveSystem";
 import { CameraData2D } from "white-dwarf/Core/Render/DataComponent/CameraData2D";
 import { LineFrameRenderData3D } from "white-dwarf/Core/Render/DataComponent/LineFrameRenderData3D";
 import { PerspectiveCameraData3D } from "white-dwarf/Core/Render/DataComponent/PerspectiveCameraData3D";
@@ -22,6 +26,7 @@ import { EditorCamTagAppendSystem } from "white-dwarf/Editor/System/EditorCamTag
 import { LineFrame3DSegment } from "white-dwarf/Mathematics/LineFrame3DSegment";
 import { Vector3 } from "white-dwarf/Mathematics/Vector3";
 import { Cam3DDragSystem } from "white-dwarf/Utils/System/Cam3DDragSystem";
+import { FollowPositionSystem } from "./Systems/FollowPositionSystem";
 
 export const main = () => {
   systemContext.coreSetup = () => {
@@ -48,10 +53,28 @@ export const main = () => {
     // Register main camera init system.
     mainWorld.registerSystem(MainCameraInitSystem);
 
+    // Register follow system.
+    mainWorld.registerSystem(FollowPositionSystem);
+
     // Register Euler move and gravity system.
-    mainWorld
+    physicsWorld
       .registerSystem(EulerVelocity3DMoveSystem)
       .registerSystem(EulerVelocityGravitySystem);
+
+    // Register Verlet move and gravity system.
+    physicsWorld
+      .registerSystem(VerletVelocity3DMoveSystem, {
+        priority: 100,
+      })
+      .registerSystem(VerletVelocity3DGravitySystem);
+
+    // Register physics sync system.
+    mainWorld.registerSystem(MainWorldTransformSyncSystem, {
+      physicsWorld: physicsWorld,
+    });
+    physicsWorld.registerSystem(PhysicsWorldTransformSyncSystem, {
+      priority: 1000,
+    });
 
     // Register camera drag system.
     mainWorld.registerSystem(Cam3DDragSystem, {

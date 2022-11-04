@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Fangjun-Zhou/cs559-cloth-simulation#readme",
   "dependencies": {
-    "esbuild": "^0.15.12"
+    "esbuild": "^0.15.12",
+    "gl-matrix": "^3.4.3"
   }
 }

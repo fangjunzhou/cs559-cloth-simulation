@@ -175,9 +175,9 @@
         if (typeof handler === "function") {
           ReflectApply(handler, this, args);
         } else {
-          var len4 = handler.length;
-          var listeners = arrayClone(handler, len4);
-          for (var i = 0; i < len4; ++i)
+          var len5 = handler.length;
+          var listeners = arrayClone(handler, len5);
+          for (var i = 0; i < len5; ++i)
             ReflectApply(listeners[i], this, args);
         }
         return true;
@@ -382,10 +382,10 @@
         return this._eventsCount > 0 ? ReflectOwnKeys(this._events) : [];
       };
       function arrayClone(arr, n) {
-        var copy7 = new Array(n);
+        var copy8 = new Array(n);
         for (var i = 0; i < n; ++i)
-          copy7[i] = arr[i];
-        return copy7;
+          copy8[i] = arr[i];
+        return copy8;
       }
       function spliceOne(list, index) {
         for (; index + 1 < list.length; index++)
@@ -617,9 +617,9 @@
     }
     expand(count) {
       for (var n = 0; n < count; n++) {
-        var clone7 = new this.T();
-        clone7._pool = this;
-        this.freeList.push(clone7);
+        var clone8 = new this.T();
+        clone8._pool = this;
+        this.freeList.push(clone8);
       }
       this.count += count;
     }
@@ -902,9 +902,9 @@
     }
     expand(count) {
       for (var n = 0; n < count; n++) {
-        var clone7 = new this.T(this.entityManager);
-        clone7._pool = this;
-        this.freeList.push(clone7);
+        var clone8 = new this.T(this.entityManager);
+        clone8._pool = this;
+        this.freeList.push(clone8);
       }
       this.count += count;
     }
@@ -1441,7 +1441,7 @@
     currentTime: 0,
     deltaTime: 0,
     timeScale: 1,
-    fixedTimeStep: 1 / 60
+    fixedTimeStep: 1 / 120
   };
   var mainUpdate = () => {
     let currentTime = Date.now() / 1e3;
@@ -1976,16 +1976,16 @@
     out[8] = a[8] * b;
     return out;
   }
-  function multiplyScalarAndAdd(out, a, b, scale7) {
-    out[0] = a[0] + b[0] * scale7;
-    out[1] = a[1] + b[1] * scale7;
-    out[2] = a[2] + b[2] * scale7;
-    out[3] = a[3] + b[3] * scale7;
-    out[4] = a[4] + b[4] * scale7;
-    out[5] = a[5] + b[5] * scale7;
-    out[6] = a[6] + b[6] * scale7;
-    out[7] = a[7] + b[7] * scale7;
-    out[8] = a[8] + b[8] * scale7;
+  function multiplyScalarAndAdd(out, a, b, scale8) {
+    out[0] = a[0] + b[0] * scale8;
+    out[1] = a[1] + b[1] * scale8;
+    out[2] = a[2] + b[2] * scale8;
+    out[3] = a[3] + b[3] * scale8;
+    out[4] = a[4] + b[4] * scale8;
+    out[5] = a[5] + b[5] * scale8;
+    out[6] = a[6] + b[6] * scale8;
+    out[7] = a[7] + b[7] * scale8;
+    out[8] = a[8] + b[8] * scale8;
     return out;
   }
   function exactEquals(a, b) {
@@ -2392,7 +2392,7 @@
   }
   function rotate2(out, a, rad, axis) {
     var x = axis[0], y = axis[1], z = axis[2];
-    var len4 = Math.hypot(x, y, z);
+    var len5 = Math.hypot(x, y, z);
     var s, c, t;
     var a00, a01, a02, a03;
     var a10, a11, a12, a13;
@@ -2400,13 +2400,13 @@
     var b00, b01, b02;
     var b10, b11, b12;
     var b20, b21, b22;
-    if (len4 < EPSILON) {
+    if (len5 < EPSILON) {
       return null;
     }
-    len4 = 1 / len4;
-    x *= len4;
-    y *= len4;
-    z *= len4;
+    len5 = 1 / len5;
+    x *= len5;
+    y *= len5;
+    z *= len5;
     s = Math.sin(rad);
     c = Math.cos(rad);
     t = 1 - c;
@@ -2584,15 +2584,15 @@
   }
   function fromRotation2(out, rad, axis) {
     var x = axis[0], y = axis[1], z = axis[2];
-    var len4 = Math.hypot(x, y, z);
+    var len5 = Math.hypot(x, y, z);
     var s, c, t;
-    if (len4 < EPSILON) {
+    if (len5 < EPSILON) {
       return null;
     }
-    len4 = 1 / len4;
-    x *= len4;
-    y *= len4;
-    z *= len4;
+    len5 = 1 / len5;
+    x *= len5;
+    y *= len5;
+    z *= len5;
     s = Math.sin(rad);
     c = Math.cos(rad);
     t = 1 - c;
@@ -3050,7 +3050,7 @@
     return out;
   }
   function lookAt(out, eye, center, up) {
-    var x0, x1, x2, y0, y1, y2, z0, z1, z2, len4;
+    var x0, x1, x2, y0, y1, y2, z0, z1, z2, len5;
     var eyex = eye[0];
     var eyey = eye[1];
     var eyez = eye[2];
@@ -3066,37 +3066,37 @@
     z0 = eyex - centerx;
     z1 = eyey - centery;
     z2 = eyez - centerz;
-    len4 = 1 / Math.hypot(z0, z1, z2);
-    z0 *= len4;
-    z1 *= len4;
-    z2 *= len4;
+    len5 = 1 / Math.hypot(z0, z1, z2);
+    z0 *= len5;
+    z1 *= len5;
+    z2 *= len5;
     x0 = upy * z2 - upz * z1;
     x1 = upz * z0 - upx * z2;
     x2 = upx * z1 - upy * z0;
-    len4 = Math.hypot(x0, x1, x2);
-    if (!len4) {
+    len5 = Math.hypot(x0, x1, x2);
+    if (!len5) {
       x0 = 0;
       x1 = 0;
       x2 = 0;
     } else {
-      len4 = 1 / len4;
-      x0 *= len4;
-      x1 *= len4;
-      x2 *= len4;
+      len5 = 1 / len5;
+      x0 *= len5;
+      x1 *= len5;
+      x2 *= len5;
     }
     y0 = z1 * x2 - z2 * x1;
     y1 = z2 * x0 - z0 * x2;
     y2 = z0 * x1 - z1 * x0;
-    len4 = Math.hypot(y0, y1, y2);
-    if (!len4) {
+    len5 = Math.hypot(y0, y1, y2);
+    if (!len5) {
       y0 = 0;
       y1 = 0;
       y2 = 0;
     } else {
-      len4 = 1 / len4;
-      y0 *= len4;
-      y1 *= len4;
-      y2 *= len4;
+      len5 = 1 / len5;
+      y0 *= len5;
+      y1 *= len5;
+      y2 *= len5;
     }
     out[0] = x0;
     out[1] = y0;
@@ -3119,20 +3119,20 @@
   function targetTo(out, eye, target, up) {
     var eyex = eye[0], eyey = eye[1], eyez = eye[2], upx = up[0], upy = up[1], upz = up[2];
     var z0 = eyex - target[0], z1 = eyey - target[1], z2 = eyez - target[2];
-    var len4 = z0 * z0 + z1 * z1 + z2 * z2;
-    if (len4 > 0) {
-      len4 = 1 / Math.sqrt(len4);
-      z0 *= len4;
-      z1 *= len4;
-      z2 *= len4;
+    var len5 = z0 * z0 + z1 * z1 + z2 * z2;
+    if (len5 > 0) {
+      len5 = 1 / Math.sqrt(len5);
+      z0 *= len5;
+      z1 *= len5;
+      z2 *= len5;
     }
     var x0 = upy * z2 - upz * z1, x1 = upz * z0 - upx * z2, x2 = upx * z1 - upy * z0;
-    len4 = x0 * x0 + x1 * x1 + x2 * x2;
-    if (len4 > 0) {
-      len4 = 1 / Math.sqrt(len4);
-      x0 *= len4;
-      x1 *= len4;
-      x2 *= len4;
+    len5 = x0 * x0 + x1 * x1 + x2 * x2;
+    if (len5 > 0) {
+      len5 = 1 / Math.sqrt(len5);
+      x0 *= len5;
+      x1 *= len5;
+      x2 *= len5;
     }
     out[0] = x0;
     out[1] = x1;
@@ -3215,23 +3215,23 @@
     out[15] = a[15] * b;
     return out;
   }
-  function multiplyScalarAndAdd2(out, a, b, scale7) {
-    out[0] = a[0] + b[0] * scale7;
-    out[1] = a[1] + b[1] * scale7;
-    out[2] = a[2] + b[2] * scale7;
-    out[3] = a[3] + b[3] * scale7;
-    out[4] = a[4] + b[4] * scale7;
-    out[5] = a[5] + b[5] * scale7;
-    out[6] = a[6] + b[6] * scale7;
-    out[7] = a[7] + b[7] * scale7;
-    out[8] = a[8] + b[8] * scale7;
-    out[9] = a[9] + b[9] * scale7;
-    out[10] = a[10] + b[10] * scale7;
-    out[11] = a[11] + b[11] * scale7;
-    out[12] = a[12] + b[12] * scale7;
-    out[13] = a[13] + b[13] * scale7;
-    out[14] = a[14] + b[14] * scale7;
-    out[15] = a[15] + b[15] * scale7;
+  function multiplyScalarAndAdd2(out, a, b, scale8) {
+    out[0] = a[0] + b[0] * scale8;
+    out[1] = a[1] + b[1] * scale8;
+    out[2] = a[2] + b[2] * scale8;
+    out[3] = a[3] + b[3] * scale8;
+    out[4] = a[4] + b[4] * scale8;
+    out[5] = a[5] + b[5] * scale8;
+    out[6] = a[6] + b[6] * scale8;
+    out[7] = a[7] + b[7] * scale8;
+    out[8] = a[8] + b[8] * scale8;
+    out[9] = a[9] + b[9] * scale8;
+    out[10] = a[10] + b[10] * scale8;
+    out[11] = a[11] + b[11] * scale8;
+    out[12] = a[12] + b[12] * scale8;
+    out[13] = a[13] + b[13] * scale8;
+    out[14] = a[14] + b[14] * scale8;
+    out[15] = a[15] + b[15] * scale8;
     return out;
   }
   function exactEquals2(a, b) {
@@ -3448,10 +3448,10 @@
     out[2] = a[2] * b;
     return out;
   }
-  function scaleAndAdd(out, a, b, scale7) {
-    out[0] = a[0] + b[0] * scale7;
-    out[1] = a[1] + b[1] * scale7;
-    out[2] = a[2] + b[2] * scale7;
+  function scaleAndAdd(out, a, b, scale8) {
+    out[0] = a[0] + b[0] * scale8;
+    out[1] = a[1] + b[1] * scale8;
+    out[2] = a[2] + b[2] * scale8;
     return out;
   }
   function distance(a, b) {
@@ -3488,13 +3488,13 @@
     var x = a[0];
     var y = a[1];
     var z = a[2];
-    var len4 = x * x + y * y + z * z;
-    if (len4 > 0) {
-      len4 = 1 / Math.sqrt(len4);
+    var len5 = x * x + y * y + z * z;
+    if (len5 > 0) {
+      len5 = 1 / Math.sqrt(len5);
     }
-    out[0] = a[0] * len4;
-    out[1] = a[1] * len4;
-    out[2] = a[2] * len4;
+    out[0] = a[0] * len5;
+    out[1] = a[1] * len5;
+    out[2] = a[2] * len5;
     return out;
   }
   function dot(a, b) {
@@ -3541,14 +3541,14 @@
     out[2] = a[2] * factor1 + b[2] * factor2 + c[2] * factor3 + d[2] * factor4;
     return out;
   }
-  function random(out, scale7) {
-    scale7 = scale7 || 1;
+  function random(out, scale8) {
+    scale8 = scale8 || 1;
     var r = RANDOM() * 2 * Math.PI;
     var z = RANDOM() * 2 - 1;
-    var zScale = Math.sqrt(1 - z * z) * scale7;
+    var zScale = Math.sqrt(1 - z * z) * scale8;
     out[0] = Math.cos(r) * zScale;
     out[1] = Math.sin(r) * zScale;
-    out[2] = z * scale7;
+    out[2] = z * scale8;
     return out;
   }
   function transformMat4(out, a, m) {
@@ -3753,14 +3753,14 @@
     var y = a[1];
     var z = a[2];
     var w = a[3];
-    var len4 = x * x + y * y + z * z + w * w;
-    if (len4 > 0) {
-      len4 = 1 / Math.sqrt(len4);
+    var len5 = x * x + y * y + z * z + w * w;
+    if (len5 > 0) {
+      len5 = 1 / Math.sqrt(len5);
     }
-    out[0] = x * len4;
-    out[1] = y * len4;
-    out[2] = z * len4;
-    out[3] = w * len4;
+    out[0] = x * len5;
+    out[1] = y * len5;
+    out[2] = z * len5;
+    out[3] = w * len5;
     return out;
   }
   function dot2(a, b) {
@@ -3975,8 +3975,8 @@
   }
   function invert3(out, a) {
     var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3];
-    var dot5 = a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3;
-    var invDot = dot5 ? 1 / dot5 : 0;
+    var dot6 = a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3;
+    var invDot = dot6 ? 1 / dot6 : 0;
     out[0] = -a0 * invDot;
     out[1] = -a1 * invDot;
     out[2] = -a2 * invDot;
@@ -4058,15 +4058,15 @@
     var xUnitVec3 = fromValues3(1, 0, 0);
     var yUnitVec3 = fromValues3(0, 1, 0);
     return function(out, a, b) {
-      var dot5 = dot(a, b);
-      if (dot5 < -0.999999) {
+      var dot6 = dot(a, b);
+      if (dot6 < -0.999999) {
         cross(tmpvec3, xUnitVec3, a);
         if (len(tmpvec3) < 1e-6)
           cross(tmpvec3, yUnitVec3, a);
         normalize(tmpvec3, tmpvec3);
         setAxisAngle(out, tmpvec3, Math.PI);
         return out;
-      } else if (dot5 > 0.999999) {
+      } else if (dot6 > 0.999999) {
         out[0] = 0;
         out[1] = 0;
         out[2] = 0;
@@ -4077,7 +4077,7 @@
         out[0] = tmpvec3[0];
         out[1] = tmpvec3[1];
         out[2] = tmpvec3[2];
-        out[3] = 1 + dot5;
+        out[3] = 1 + dot6;
         return normalize3(out, out);
       }
     };
@@ -4237,9 +4237,9 @@
     out[1] = a[1] * b;
     return out;
   }
-  function scaleAndAdd2(out, a, b, scale7) {
-    out[0] = a[0] + b[0] * scale7;
-    out[1] = a[1] + b[1] * scale7;
+  function scaleAndAdd2(out, a, b, scale8) {
+    out[0] = a[0] + b[0] * scale8;
+    out[1] = a[1] + b[1] * scale8;
     return out;
   }
   function distance2(a, b) {
@@ -4270,12 +4270,12 @@
   }
   function normalize4(out, a) {
     var x = a[0], y = a[1];
-    var len4 = x * x + y * y;
-    if (len4 > 0) {
-      len4 = 1 / Math.sqrt(len4);
+    var len5 = x * x + y * y;
+    if (len5 > 0) {
+      len5 = 1 / Math.sqrt(len5);
     }
-    out[0] = a[0] * len4;
-    out[1] = a[1] * len4;
+    out[0] = a[0] * len5;
+    out[1] = a[1] * len5;
     return out;
   }
   function dot4(a, b) {
@@ -4293,11 +4293,11 @@
     out[1] = ay + t * (b[1] - ay);
     return out;
   }
-  function random3(out, scale7) {
-    scale7 = scale7 || 1;
+  function random3(out, scale8) {
+    scale8 = scale8 || 1;
     var r = RANDOM() * 2 * Math.PI;
-    out[0] = Math.cos(r) * scale7;
-    out[1] = Math.sin(r) * scale7;
+    out[0] = Math.cos(r) * scale8;
+    out[1] = Math.sin(r) * scale8;
     return out;
   }
   function transformMat2(out, a, m) {
@@ -4849,6 +4849,245 @@
     }
   };
 
+  // white-dwarf/submodules/ecsy/src/TagComponent.js
+  var TagComponent = class extends Component {
+    constructor() {
+      super(false);
+    }
+  };
+  TagComponent.isTagComponent = true;
+
+  // white-dwarf/src/Editor/TagComponent/EditorSelectedTag.ts
+  var EditorSelectedTag = class extends TagComponent {
+  };
+  EditorSelectedTag = __decorateClass([
+    IComponent.register
+  ], EditorSelectedTag);
+
+  // white-dwarf/src/Core/Serialization/EntitySerializer.ts
+  var EntitySerializer = class {
+    constructor() {
+      this.entityData = null;
+    }
+    static serializeComponent(component) {
+      const componentObject = {
+        type: component.constructor.name,
+        data: {}
+      };
+      const componentSchema = Object.getPrototypeOf(component).constructor.schema;
+      const componentDataContent = {};
+      Object.keys(component).forEach((key) => {
+        if (Object.keys(componentSchema).includes(key) && componentSchema[key].type !== Types.Ref) {
+          componentDataContent[key] = component[key];
+        }
+      });
+      componentObject.data = componentDataContent;
+      return componentObject;
+    }
+    static serializeEntity(entity) {
+      const entityObject = {
+        name: entity.name,
+        id: entity.id,
+        components: {}
+      };
+      const components = entity.getComponents();
+      const componentIndices = Object.keys(components);
+      for (let j = 0; j < componentIndices.length; j++) {
+        const componentIndex = componentIndices[j];
+        const component = components[componentIndex];
+        if (component.constructor.name === EditorSelectedTag.name) {
+          continue;
+        }
+        const componentObject = EntitySerializer.serializeComponent(component);
+        entityObject.components[componentObject.type] = componentObject.data;
+      }
+      return entityObject;
+    }
+    static deserializeEntity(world, entityData, reserveId = false) {
+      const entity = world.getEntityById(entityData.id);
+      if (reserveId && entity && entity.alive) {
+        console.warn(
+          `Entity with id ${entityData.id} already exists. Skipping deserialization.`
+        );
+        return null;
+      }
+      let newEntity;
+      if (reserveId) {
+        newEntity = world.createEntity(entityData.name, entityData.id);
+      } else {
+        newEntity = world.createEntity(entityData.name);
+      }
+      for (const componentName in entityData.components) {
+        const componentData = entityData.components[componentName];
+        const componentList = IComponent.getImplementations();
+        let component = componentList.find(
+          (component2) => component2.name === componentName
+        );
+        if (component) {
+          newEntity.addComponent(component, componentData);
+        } else {
+          console.error("Component not found.");
+        }
+      }
+      return entity;
+    }
+  };
+
+  // white-dwarf/src/Core/Physics/DataComponents/SyncTransform3DData.ts
+  var SyncTransform3DData = class extends Component {
+  };
+  SyncTransform3DData.schema = {
+    mainWorldTransform: {
+      type: Types.Ref,
+      default: null
+    }
+  };
+  SyncTransform3DData = __decorateClass([
+    IComponent.register
+  ], SyncTransform3DData);
+
+  // white-dwarf/src/Core/Physics/Systems/MainWorldTransformSyncSystem.ts
+  var MainWorldTransformSyncSystem = class extends System {
+    init(attributes) {
+      const physicsWorld2 = attributes == null ? void 0 : attributes.physicsWorld;
+      this.queries.syncEntities.results.forEach((entity) => {
+        const originalTransform = entity.getMutableComponent(
+          TransformData3D
+        );
+        const entityData = EntitySerializer.serializeEntity(entity);
+        const physicsEntity = EntitySerializer.deserializeEntity(
+          physicsWorld2,
+          entityData
+        );
+        physicsEntity == null ? void 0 : physicsEntity.addComponent(SyncTransform3DData, {
+          mainWorldTransform: originalTransform
+        });
+      });
+    }
+    execute(delta, time) {
+    }
+  };
+  MainWorldTransformSyncSystem.queries = {
+    syncEntities: {
+      components: [TransformData3D]
+    }
+  };
+
+  // white-dwarf/src/Core/Physics/Systems/PhysicsWorldTransformSyncSystem.ts
+  var PhysicsWorldTransformSyncSystem = class extends System {
+    execute(delta, time) {
+      this.queries.syncEntities.results.forEach((entity) => {
+        const syncData = entity.getComponent(
+          SyncTransform3DData
+        );
+        const transformData = entity.getComponent(
+          TransformData3D
+        );
+        syncData.mainWorldTransform.copy(transformData);
+        syncData.mainWorldTransform.eventEmitter.emit(
+          COMPONENT_CHANGE_EVENT,
+          syncData.mainWorldTransform
+        );
+      });
+    }
+  };
+  PhysicsWorldTransformSyncSystem.queries = {
+    syncEntities: {
+      components: [TransformData3D, SyncTransform3DData],
+      listen: {
+        changed: true,
+        added: true
+      }
+    }
+  };
+
+  // white-dwarf/src/Core/Physics/DataComponents/VerletVelocityData3D.ts
+  var VerletVelocityData3D = class extends Component {
+  };
+  VerletVelocityData3D.schema = {
+    acceleration: {
+      type: Vector3Type,
+      default: new Vector3(0, 0, 0)
+    },
+    lastFramePosition: {
+      type: Vector3Type,
+      default: new Vector3(0, 0, 0)
+    }
+  };
+  VerletVelocityData3D = __decorateClass([
+    IComponent.register
+  ], VerletVelocityData3D);
+
+  // white-dwarf/src/Core/Physics/Systems/VerletVelocity3DGravitySystem.ts
+  var GRAVITY_ACCELERATION2 = 9.8;
+  var VerletVelocity3DGravitySystem = class extends System {
+    execute(delta, time) {
+      this.queries.gravityTargets.results.forEach((target) => {
+        const verletVelocity = target.getMutableComponent(
+          VerletVelocityData3D
+        );
+        vec3_exports.add(
+          verletVelocity.acceleration.value,
+          verletVelocity.acceleration.value,
+          vec3_exports.fromValues(0, -GRAVITY_ACCELERATION2, 0)
+        );
+      });
+    }
+  };
+  VerletVelocity3DGravitySystem.queries = {
+    gravityTargets: {
+      components: [VerletVelocityData3D]
+    }
+  };
+
+  // white-dwarf/src/Core/Physics/Systems/VerletVelocity3DMoveSystem.ts
+  var VerletVelocity3DMoveSystem = class extends System {
+    execute(delta, time) {
+      var _a;
+      (_a = this.queries.moveInitTargets.added) == null ? void 0 : _a.forEach((target) => {
+        let transform = target.getComponent(TransformData3D);
+        let verletVelocity = target.getMutableComponent(
+          VerletVelocityData3D
+        );
+        verletVelocity.lastFramePosition = transform.position.clone();
+      });
+      this.queries.moveTargets.results.forEach((target) => {
+        let transform = target.getMutableComponent(
+          TransformData3D
+        );
+        let verletVelocity = target.getMutableComponent(
+          VerletVelocityData3D
+        );
+        const newPos = vec3_exports.create();
+        vec3_exports.scale(newPos, transform.position.value, 2);
+        vec3_exports.sub(newPos, newPos, verletVelocity.lastFramePosition.value);
+        vec3_exports.add(
+          newPos,
+          newPos,
+          vec3_exports.scale(
+            vec3_exports.create(),
+            verletVelocity.acceleration.value,
+            Math.pow(delta, 2)
+          )
+        );
+        verletVelocity.lastFramePosition.value = transform.position.value;
+        transform.position.value = newPos;
+        verletVelocity.acceleration.value = vec3_exports.create();
+      });
+    }
+  };
+  VerletVelocity3DMoveSystem.queries = {
+    moveInitTargets: {
+      components: [TransformData3D, VerletVelocityData3D],
+      listen: {
+        added: true
+      }
+    },
+    moveTargets: {
+      components: [TransformData3D, VerletVelocityData3D]
+    }
+  };
+
   // white-dwarf/src/Core/Render/DataComponent/PerspectiveCameraData3D.ts
   var PerspectiveCameraData3D = class extends Component {
     constructor() {
@@ -5127,14 +5366,6 @@
     IComponent.register
   ], OrthographicCameraData3D);
 
-  // white-dwarf/submodules/ecsy/src/TagComponent.js
-  var TagComponent = class extends Component {
-    constructor() {
-      super(false);
-    }
-  };
-  TagComponent.isTagComponent = true;
-
   // white-dwarf/src/Core/Render/TagComponent/MainCameraTag.ts
   var MainCameraTag = class extends TagComponent {
   };
@@ -5365,81 +5596,6 @@
   EditorSceneCamTag = __decorateClass([
     IComponent.register
   ], EditorSceneCamTag);
-
-  // white-dwarf/src/Editor/TagComponent/EditorSelectedTag.ts
-  var EditorSelectedTag = class extends TagComponent {
-  };
-  EditorSelectedTag = __decorateClass([
-    IComponent.register
-  ], EditorSelectedTag);
-
-  // white-dwarf/src/Core/Serialization/EntitySerializer.ts
-  var EntitySerializer = class {
-    constructor() {
-      this.entityData = null;
-    }
-    static serializeComponent(component) {
-      const componentObject = {
-        type: component.constructor.name,
-        data: {}
-      };
-      const componentSchema = Object.getPrototypeOf(component).constructor.schema;
-      const componentDataContent = {};
-      Object.keys(component).forEach((key) => {
-        if (Object.keys(componentSchema).includes(key) && componentSchema[key].type !== Types.Ref) {
-          componentDataContent[key] = component[key];
-        }
-      });
-      componentObject.data = componentDataContent;
-      return componentObject;
-    }
-    static serializeEntity(entity) {
-      const entityObject = {
-        name: entity.name,
-        id: entity.id,
-        components: {}
-      };
-      const components = entity.getComponents();
-      const componentIndices = Object.keys(components);
-      for (let j = 0; j < componentIndices.length; j++) {
-        const componentIndex = componentIndices[j];
-        const component = components[componentIndex];
-        if (component.constructor.name === EditorSelectedTag.name) {
-          continue;
-        }
-        const componentObject = EntitySerializer.serializeComponent(component);
-        entityObject.components[componentObject.type] = componentObject.data;
-      }
-      return entityObject;
-    }
-    static deserializeEntity(world, entityData, reserveId = false) {
-      const entity = world.getEntityById(entityData.id);
-      if (reserveId && entity && entity.alive) {
-        console.warn(
-          `Entity with id ${entityData.id} already exists. Skipping deserialization.`
-        );
-        return;
-      }
-      let newEntity;
-      if (reserveId) {
-        newEntity = world.createEntity(entityData.name, entityData.id);
-      } else {
-        newEntity = world.createEntity(entityData.name);
-      }
-      for (const componentName in entityData.components) {
-        const componentData = entityData.components[componentName];
-        const componentList = IComponent.getImplementations();
-        let component = componentList.find(
-          (component2) => component2.name === componentName
-        );
-        if (component) {
-          newEntity.addComponent(component, componentData);
-        } else {
-          console.error("Component not found.");
-        }
-      }
-    }
-  };
 
   // white-dwarf/src/Core/Serialization/WorldSerializer.ts
   var WorldSerializer = class {
@@ -5858,6 +6014,456 @@
     }
   };
 
+  // node_modules/gl-matrix/esm/common.js
+  var EPSILON2 = 1e-6;
+  var ARRAY_TYPE2 = typeof Float32Array !== "undefined" ? Float32Array : Array;
+  var RANDOM2 = Math.random;
+  var degree2 = Math.PI / 180;
+  if (!Math.hypot)
+    Math.hypot = function() {
+      var y = 0, i = arguments.length;
+      while (i--) {
+        y += arguments[i] * arguments[i];
+      }
+      return Math.sqrt(y);
+    };
+
+  // node_modules/gl-matrix/esm/vec3.js
+  var vec3_exports2 = {};
+  __export(vec3_exports2, {
+    add: () => add7,
+    angle: () => angle3,
+    bezier: () => bezier2,
+    ceil: () => ceil3,
+    clone: () => clone7,
+    copy: () => copy7,
+    create: () => create7,
+    cross: () => cross3,
+    dist: () => dist3,
+    distance: () => distance3,
+    div: () => div3,
+    divide: () => divide3,
+    dot: () => dot5,
+    equals: () => equals7,
+    exactEquals: () => exactEquals7,
+    floor: () => floor3,
+    forEach: () => forEach4,
+    fromValues: () => fromValues7,
+    hermite: () => hermite2,
+    inverse: () => inverse3,
+    len: () => len4,
+    length: () => length5,
+    lerp: () => lerp5,
+    max: () => max3,
+    min: () => min3,
+    mul: () => mul6,
+    multiply: () => multiply6,
+    negate: () => negate3,
+    normalize: () => normalize5,
+    random: () => random4,
+    rotateX: () => rotateX4,
+    rotateY: () => rotateY4,
+    rotateZ: () => rotateZ4,
+    round: () => round3,
+    scale: () => scale7,
+    scaleAndAdd: () => scaleAndAdd3,
+    set: () => set7,
+    sqrDist: () => sqrDist3,
+    sqrLen: () => sqrLen4,
+    squaredDistance: () => squaredDistance3,
+    squaredLength: () => squaredLength5,
+    str: () => str6,
+    sub: () => sub5,
+    subtract: () => subtract5,
+    transformMat3: () => transformMat33,
+    transformMat4: () => transformMat43,
+    transformQuat: () => transformQuat2,
+    zero: () => zero3
+  });
+  function create7() {
+    var out = new ARRAY_TYPE2(3);
+    if (ARRAY_TYPE2 != Float32Array) {
+      out[0] = 0;
+      out[1] = 0;
+      out[2] = 0;
+    }
+    return out;
+  }
+  function clone7(a) {
+    var out = new ARRAY_TYPE2(3);
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    return out;
+  }
+  function length5(a) {
+    var x = a[0];
+    var y = a[1];
+    var z = a[2];
+    return Math.hypot(x, y, z);
+  }
+  function fromValues7(x, y, z) {
+    var out = new ARRAY_TYPE2(3);
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    return out;
+  }
+  function copy7(out, a) {
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    return out;
+  }
+  function set7(out, x, y, z) {
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    return out;
+  }
+  function add7(out, a, b) {
+    out[0] = a[0] + b[0];
+    out[1] = a[1] + b[1];
+    out[2] = a[2] + b[2];
+    return out;
+  }
+  function subtract5(out, a, b) {
+    out[0] = a[0] - b[0];
+    out[1] = a[1] - b[1];
+    out[2] = a[2] - b[2];
+    return out;
+  }
+  function multiply6(out, a, b) {
+    out[0] = a[0] * b[0];
+    out[1] = a[1] * b[1];
+    out[2] = a[2] * b[2];
+    return out;
+  }
+  function divide3(out, a, b) {
+    out[0] = a[0] / b[0];
+    out[1] = a[1] / b[1];
+    out[2] = a[2] / b[2];
+    return out;
+  }
+  function ceil3(out, a) {
+    out[0] = Math.ceil(a[0]);
+    out[1] = Math.ceil(a[1]);
+    out[2] = Math.ceil(a[2]);
+    return out;
+  }
+  function floor3(out, a) {
+    out[0] = Math.floor(a[0]);
+    out[1] = Math.floor(a[1]);
+    out[2] = Math.floor(a[2]);
+    return out;
+  }
+  function min3(out, a, b) {
+    out[0] = Math.min(a[0], b[0]);
+    out[1] = Math.min(a[1], b[1]);
+    out[2] = Math.min(a[2], b[2]);
+    return out;
+  }
+  function max3(out, a, b) {
+    out[0] = Math.max(a[0], b[0]);
+    out[1] = Math.max(a[1], b[1]);
+    out[2] = Math.max(a[2], b[2]);
+    return out;
+  }
+  function round3(out, a) {
+    out[0] = Math.round(a[0]);
+    out[1] = Math.round(a[1]);
+    out[2] = Math.round(a[2]);
+    return out;
+  }
+  function scale7(out, a, b) {
+    out[0] = a[0] * b;
+    out[1] = a[1] * b;
+    out[2] = a[2] * b;
+    return out;
+  }
+  function scaleAndAdd3(out, a, b, scale8) {
+    out[0] = a[0] + b[0] * scale8;
+    out[1] = a[1] + b[1] * scale8;
+    out[2] = a[2] + b[2] * scale8;
+    return out;
+  }
+  function distance3(a, b) {
+    var x = b[0] - a[0];
+    var y = b[1] - a[1];
+    var z = b[2] - a[2];
+    return Math.hypot(x, y, z);
+  }
+  function squaredDistance3(a, b) {
+    var x = b[0] - a[0];
+    var y = b[1] - a[1];
+    var z = b[2] - a[2];
+    return x * x + y * y + z * z;
+  }
+  function squaredLength5(a) {
+    var x = a[0];
+    var y = a[1];
+    var z = a[2];
+    return x * x + y * y + z * z;
+  }
+  function negate3(out, a) {
+    out[0] = -a[0];
+    out[1] = -a[1];
+    out[2] = -a[2];
+    return out;
+  }
+  function inverse3(out, a) {
+    out[0] = 1 / a[0];
+    out[1] = 1 / a[1];
+    out[2] = 1 / a[2];
+    return out;
+  }
+  function normalize5(out, a) {
+    var x = a[0];
+    var y = a[1];
+    var z = a[2];
+    var len5 = x * x + y * y + z * z;
+    if (len5 > 0) {
+      len5 = 1 / Math.sqrt(len5);
+    }
+    out[0] = a[0] * len5;
+    out[1] = a[1] * len5;
+    out[2] = a[2] * len5;
+    return out;
+  }
+  function dot5(a, b) {
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  }
+  function cross3(out, a, b) {
+    var ax = a[0], ay = a[1], az = a[2];
+    var bx = b[0], by = b[1], bz = b[2];
+    out[0] = ay * bz - az * by;
+    out[1] = az * bx - ax * bz;
+    out[2] = ax * by - ay * bx;
+    return out;
+  }
+  function lerp5(out, a, b, t) {
+    var ax = a[0];
+    var ay = a[1];
+    var az = a[2];
+    out[0] = ax + t * (b[0] - ax);
+    out[1] = ay + t * (b[1] - ay);
+    out[2] = az + t * (b[2] - az);
+    return out;
+  }
+  function hermite2(out, a, b, c, d, t) {
+    var factorTimes2 = t * t;
+    var factor1 = factorTimes2 * (2 * t - 3) + 1;
+    var factor2 = factorTimes2 * (t - 2) + t;
+    var factor3 = factorTimes2 * (t - 1);
+    var factor4 = factorTimes2 * (3 - 2 * t);
+    out[0] = a[0] * factor1 + b[0] * factor2 + c[0] * factor3 + d[0] * factor4;
+    out[1] = a[1] * factor1 + b[1] * factor2 + c[1] * factor3 + d[1] * factor4;
+    out[2] = a[2] * factor1 + b[2] * factor2 + c[2] * factor3 + d[2] * factor4;
+    return out;
+  }
+  function bezier2(out, a, b, c, d, t) {
+    var inverseFactor = 1 - t;
+    var inverseFactorTimesTwo = inverseFactor * inverseFactor;
+    var factorTimes2 = t * t;
+    var factor1 = inverseFactorTimesTwo * inverseFactor;
+    var factor2 = 3 * t * inverseFactorTimesTwo;
+    var factor3 = 3 * factorTimes2 * inverseFactor;
+    var factor4 = factorTimes2 * t;
+    out[0] = a[0] * factor1 + b[0] * factor2 + c[0] * factor3 + d[0] * factor4;
+    out[1] = a[1] * factor1 + b[1] * factor2 + c[1] * factor3 + d[1] * factor4;
+    out[2] = a[2] * factor1 + b[2] * factor2 + c[2] * factor3 + d[2] * factor4;
+    return out;
+  }
+  function random4(out, scale8) {
+    scale8 = scale8 || 1;
+    var r = RANDOM2() * 2 * Math.PI;
+    var z = RANDOM2() * 2 - 1;
+    var zScale = Math.sqrt(1 - z * z) * scale8;
+    out[0] = Math.cos(r) * zScale;
+    out[1] = Math.sin(r) * zScale;
+    out[2] = z * scale8;
+    return out;
+  }
+  function transformMat43(out, a, m) {
+    var x = a[0], y = a[1], z = a[2];
+    var w = m[3] * x + m[7] * y + m[11] * z + m[15];
+    w = w || 1;
+    out[0] = (m[0] * x + m[4] * y + m[8] * z + m[12]) / w;
+    out[1] = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
+    out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
+    return out;
+  }
+  function transformMat33(out, a, m) {
+    var x = a[0], y = a[1], z = a[2];
+    out[0] = x * m[0] + y * m[3] + z * m[6];
+    out[1] = x * m[1] + y * m[4] + z * m[7];
+    out[2] = x * m[2] + y * m[5] + z * m[8];
+    return out;
+  }
+  function transformQuat2(out, a, q) {
+    var qx = q[0], qy = q[1], qz = q[2], qw = q[3];
+    var x = a[0], y = a[1], z = a[2];
+    var uvx = qy * z - qz * y, uvy = qz * x - qx * z, uvz = qx * y - qy * x;
+    var uuvx = qy * uvz - qz * uvy, uuvy = qz * uvx - qx * uvz, uuvz = qx * uvy - qy * uvx;
+    var w2 = qw * 2;
+    uvx *= w2;
+    uvy *= w2;
+    uvz *= w2;
+    uuvx *= 2;
+    uuvy *= 2;
+    uuvz *= 2;
+    out[0] = x + uvx + uuvx;
+    out[1] = y + uvy + uuvy;
+    out[2] = z + uvz + uuvz;
+    return out;
+  }
+  function rotateX4(out, a, b, rad) {
+    var p = [], r = [];
+    p[0] = a[0] - b[0];
+    p[1] = a[1] - b[1];
+    p[2] = a[2] - b[2];
+    r[0] = p[0];
+    r[1] = p[1] * Math.cos(rad) - p[2] * Math.sin(rad);
+    r[2] = p[1] * Math.sin(rad) + p[2] * Math.cos(rad);
+    out[0] = r[0] + b[0];
+    out[1] = r[1] + b[1];
+    out[2] = r[2] + b[2];
+    return out;
+  }
+  function rotateY4(out, a, b, rad) {
+    var p = [], r = [];
+    p[0] = a[0] - b[0];
+    p[1] = a[1] - b[1];
+    p[2] = a[2] - b[2];
+    r[0] = p[2] * Math.sin(rad) + p[0] * Math.cos(rad);
+    r[1] = p[1];
+    r[2] = p[2] * Math.cos(rad) - p[0] * Math.sin(rad);
+    out[0] = r[0] + b[0];
+    out[1] = r[1] + b[1];
+    out[2] = r[2] + b[2];
+    return out;
+  }
+  function rotateZ4(out, a, b, rad) {
+    var p = [], r = [];
+    p[0] = a[0] - b[0];
+    p[1] = a[1] - b[1];
+    p[2] = a[2] - b[2];
+    r[0] = p[0] * Math.cos(rad) - p[1] * Math.sin(rad);
+    r[1] = p[0] * Math.sin(rad) + p[1] * Math.cos(rad);
+    r[2] = p[2];
+    out[0] = r[0] + b[0];
+    out[1] = r[1] + b[1];
+    out[2] = r[2] + b[2];
+    return out;
+  }
+  function angle3(a, b) {
+    var ax = a[0], ay = a[1], az = a[2], bx = b[0], by = b[1], bz = b[2], mag1 = Math.sqrt(ax * ax + ay * ay + az * az), mag2 = Math.sqrt(bx * bx + by * by + bz * bz), mag = mag1 * mag2, cosine = mag && dot5(a, b) / mag;
+    return Math.acos(Math.min(Math.max(cosine, -1), 1));
+  }
+  function zero3(out) {
+    out[0] = 0;
+    out[1] = 0;
+    out[2] = 0;
+    return out;
+  }
+  function str6(a) {
+    return "vec3(" + a[0] + ", " + a[1] + ", " + a[2] + ")";
+  }
+  function exactEquals7(a, b) {
+    return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+  }
+  function equals7(a, b) {
+    var a0 = a[0], a1 = a[1], a2 = a[2];
+    var b0 = b[0], b1 = b[1], b2 = b[2];
+    return Math.abs(a0 - b0) <= EPSILON2 * Math.max(1, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= EPSILON2 * Math.max(1, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= EPSILON2 * Math.max(1, Math.abs(a2), Math.abs(b2));
+  }
+  var sub5 = subtract5;
+  var mul6 = multiply6;
+  var div3 = divide3;
+  var dist3 = distance3;
+  var sqrDist3 = squaredDistance3;
+  var len4 = length5;
+  var sqrLen4 = squaredLength5;
+  var forEach4 = function() {
+    var vec = create7();
+    return function(a, stride, offset, count, fn, arg) {
+      var i, l;
+      if (!stride) {
+        stride = 3;
+      }
+      if (!offset) {
+        offset = 0;
+      }
+      if (count) {
+        l = Math.min(count * stride + offset, a.length);
+      } else {
+        l = a.length;
+      }
+      for (i = offset; i < l; i += stride) {
+        vec[0] = a[i];
+        vec[1] = a[i + 1];
+        vec[2] = a[i + 2];
+        fn(vec, vec, arg);
+        a[i] = vec[0];
+        a[i + 1] = vec[1];
+        a[i + 2] = vec[2];
+      }
+      return a;
+    };
+  }();
+
+  // src/DataComponents/FollowPositionData.ts
+  var FollowPositionData = class extends Component {
+  };
+  FollowPositionData.schema = {
+    entityId: {
+      type: Types.Number,
+      default: 0
+    },
+    targetTransform: {
+      type: Types.Ref,
+      default: null
+    },
+    offset: {
+      type: Vector3Type,
+      default: new Vector3(0, 0, 0)
+    }
+  };
+  FollowPositionData = __decorateClass([
+    IComponent.register
+  ], FollowPositionData);
+
+  // src/Systems/FollowPositionSystem.ts
+  var FollowPositionSystem = class extends System {
+    execute(delta, time) {
+      this.queries.followEntity.results.forEach((entity) => {
+        const followData = entity.getComponent(
+          FollowPositionData
+        );
+        const transform = entity.getMutableComponent(
+          TransformData3D
+        );
+        const followTarget = this.world.getEntityById(followData.entityId);
+        if (!followTarget || !followTarget.hasComponent(TransformData3D)) {
+          return;
+        }
+        const targetTransform = followTarget.getComponent(
+          TransformData3D
+        );
+        vec3_exports2.add(
+          transform.position.value,
+          targetTransform.position.value,
+          followData.offset.value
+        );
+      });
+    }
+  };
+  FollowPositionSystem.queries = {
+    followEntity: {
+      components: [TransformData3D, FollowPositionData]
+    }
+  };
+
   // src/index.ts
   var main = () => {
     systemContext.coreSetup = () => {
@@ -5877,7 +6483,17 @@
         WorldSerializer.deserializeWorld(mainWorld, worldObject);
       }
       mainWorld.registerSystem(MainCameraInitSystem);
-      mainWorld.registerSystem(EulerVelocity3DMoveSystem).registerSystem(EulerVelocityGravitySystem);
+      mainWorld.registerSystem(FollowPositionSystem);
+      physicsWorld.registerSystem(EulerVelocity3DMoveSystem).registerSystem(EulerVelocityGravitySystem);
+      physicsWorld.registerSystem(VerletVelocity3DMoveSystem, {
+        priority: 100
+      }).registerSystem(VerletVelocity3DGravitySystem);
+      mainWorld.registerSystem(MainWorldTransformSyncSystem, {
+        physicsWorld
+      });
+      physicsWorld.registerSystem(PhysicsWorldTransformSyncSystem, {
+        priority: 1e3
+      });
       mainWorld.registerSystem(Cam3DDragSystem, {
         mainCanvas: coreRenderContext.mainCanvas
       });
@@ -6107,13 +6723,13 @@
             const transform = entity.getComponent(
               TransformData2D
             );
-            const distance3 = vec2_exports.distance(
+            const distance4 = vec2_exports.distance(
               mousePos,
               this.worldToScreen(transform.position.value)
             );
-            if (distance3 < highlightThreshold && distance3 < closestDistance && !entity.hasComponent(EditorSceneCamTag)) {
+            if (distance4 < highlightThreshold && distance4 < closestDistance && !entity.hasComponent(EditorSceneCamTag)) {
               closestEntity = entity;
-              closestDistance = distance3;
+              closestDistance = distance4;
             }
           });
           this.highlightEntity = closestEntity;
@@ -6619,7 +7235,6 @@
     yield systemContext.coreStart({
       worldObject: worldData
     });
-    mainInit();
   });
   var editorStop = () => {
     resetWorld();
@@ -6629,7 +7244,6 @@
     if (worldData) {
       WorldSerializer.deserializeWorld(mainWorld, worldData);
     }
-    mainInit();
   };
   window.onload = editorInit;
   window.onresize = onResize;
