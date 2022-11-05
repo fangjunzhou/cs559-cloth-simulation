@@ -5288,12 +5288,14 @@
       }
     }
     drawLine(startPoint, endPoint, color, lineWidth) {
-      this.canvasContext.strokeStyle = color;
-      this.canvasContext.lineWidth = lineWidth;
-      this.canvasContext.beginPath();
-      this.canvasContext.moveTo(startPoint[0], startPoint[1]);
-      this.canvasContext.lineTo(endPoint[0], endPoint[1]);
-      this.canvasContext.stroke();
+      if (startPoint[2] > 1 && endPoint[2] > 1) {
+        this.canvasContext.strokeStyle = color;
+        this.canvasContext.lineWidth = lineWidth;
+        this.canvasContext.beginPath();
+        this.canvasContext.moveTo(startPoint[0], startPoint[1]);
+        this.canvasContext.lineTo(endPoint[0], endPoint[1]);
+        this.canvasContext.stroke();
+      }
     }
   };
   Canvas3DRenderer.queries = {
@@ -5524,9 +5526,7 @@
           vec3_exports.transformMat4(startPoint, segment.p0.value, objectToScreen);
           const endPoint = vec3_exports.create();
           vec3_exports.transformMat4(endPoint, segment.p1.value, objectToScreen);
-          if (startPoint[2] > 1 && endPoint[2] > 1) {
-            this.drawLine(startPoint, endPoint, renderData.color, 1);
-          }
+          this.drawLine(startPoint, endPoint, renderData.color, 1);
         });
       });
     }
