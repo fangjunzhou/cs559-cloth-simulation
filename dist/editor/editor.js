@@ -5889,7 +5889,7 @@
       super(...arguments);
       this.mousePosition = vec2_exports.create();
       this.mouseDelta = vec2_exports.create();
-      this.mouseInCanvas = false;
+      this.mouseInCanvas = true;
       this.highlightAxis = null;
       this.movingAxis = null;
     }
@@ -8739,7 +8739,7 @@
       if (props.worldObject) {
         WorldSerializer.deserializeWorld(mainWorld, props.worldObject);
       } else {
-        const worldObject = yield fetch("assets/cloth_world.json").then(
+        const worldObject = yield fetch("assets/rope_world.json").then(
           (response) => response.json()
         );
         WorldSerializer.deserializeWorld(mainWorld, worldObject);

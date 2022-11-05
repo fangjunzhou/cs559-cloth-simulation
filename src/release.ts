@@ -14,8 +14,9 @@ window.onload = () => {
   };
 
   // Resize main canvas.
-  coreRenderContext.mainCanvas.width = window.innerWidth;
-  coreRenderContext.mainCanvas.height = window.innerHeight;
+  coreRenderContext.mainCanvas.width = coreRenderContext.mainCanvas.clientWidth;
+  coreRenderContext.mainCanvas.height =
+    coreRenderContext.mainCanvas.clientHeight;
 
   // Development main.
   main();
@@ -27,7 +28,9 @@ window.onload = () => {
 window.onresize = () => {
   // Resize main canvas.
   if (coreRenderContext.mainCanvas) {
-    coreRenderContext.mainCanvas.width = window.innerWidth;
-    coreRenderContext.mainCanvas.height = window.innerHeight;
+    coreRenderContext.mainCanvas.width =
+      coreRenderContext.mainCanvas.clientWidth;
+    coreRenderContext.mainCanvas.height =
+      coreRenderContext.mainCanvas.clientHeight;
   }
 };

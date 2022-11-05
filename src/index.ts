@@ -57,7 +57,7 @@ export const main = () => {
       WorldSerializer.deserializeWorld(mainWorld, props.worldObject);
     } else {
       // Read world.json.
-      const worldObject = (await fetch("assets/cloth_world.json").then(
+      const worldObject = (await fetch("assets/rope_world.json").then(
         (response) => response.json()
       )) as IWorldObject;
       // Deserialize the world.
