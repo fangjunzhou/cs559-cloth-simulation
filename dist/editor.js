@@ -7877,6 +7877,129 @@
     }
   };
 
+  // src/Systems/ClothPreviewRenderer.ts
+  var _ClothPreviewRenderer = class extends Canvas3DRenderer {
+    execute(delta, time) {
+      try {
+        super.execute(delta, time);
+      } catch (error) {
+        console.warn(error);
+        return;
+      }
+      this.generateWorldToCameraMatrix();
+      this.generateCameraToScreenMatrix();
+      const worldToScreen = mat4_exports2.multiply(
+        mat4_exports2.create(),
+        this.cameraToScreen,
+        this.worldToCamera
+      );
+      this.queries.ropeEntities.results.forEach((ropeEntity) => {
+        const transform = ropeEntity.getComponent(
+          TransformData3D
+        );
+        const ropeInitData = ropeEntity.getComponent(
+          ClothInitData
+        );
+        const topCorner = vec3_exports2.add(
+          vec3_exports2.create(),
+          transform.position.value,
+          vec3_exports2.fromValues(
+            -ropeInitData.width * ropeInitData.resolution / 2,
+            0,
+            0
+          )
+        );
+        for (let i = 0; i <= ropeInitData.height; i++) {
+          for (let j = 0; j <= ropeInitData.width; j++) {
+            const currPos = vec3_exports2.transformMat4(
+              vec3_exports2.create(),
+              vec3_exports2.add(
+                vec3_exports2.create(),
+                topCorner,
+                vec3_exports2.fromValues(
+                  j * ropeInitData.resolution,
+                  -i * ropeInitData.resolution,
+                  0
+                )
+              ),
+              worldToScreen
+            );
+            if (i > 0) {
+              const prevPos = vec3_exports2.transformMat4(
+                vec3_exports2.create(),
+                vec3_exports2.add(
+                  vec3_exports2.create(),
+                  topCorner,
+                  vec3_exports2.fromValues(
+                    j * ropeInitData.resolution,
+                    -(i - 1) * ropeInitData.resolution,
+                    0
+                  )
+                ),
+                worldToScreen
+              );
+              this.drawLine(prevPos, currPos, "black", 1);
+            }
+            if (i < ropeInitData.height - 1) {
+              const nextPos = vec3_exports2.transformMat4(
+                vec3_exports2.create(),
+                vec3_exports2.add(
+                  vec3_exports2.create(),
+                  topCorner,
+                  vec3_exports2.fromValues(
+                    j * ropeInitData.resolution,
+                    -(i + 1) * ropeInitData.resolution,
+                    0
+                  )
+                ),
+                worldToScreen
+              );
+              this.drawLine(nextPos, currPos, "black", 1);
+            }
+            if (j > 0) {
+              const prevPos = vec3_exports2.transformMat4(
+                vec3_exports2.create(),
+                vec3_exports2.add(
+                  vec3_exports2.create(),
+                  topCorner,
+                  vec3_exports2.fromValues(
+                    (j - 1) * ropeInitData.resolution,
+                    -i * ropeInitData.resolution,
+                    0
+                  )
+                ),
+                worldToScreen
+              );
+              this.drawLine(prevPos, currPos, "black", 1);
+            }
+            if (j < ropeInitData.width - 1) {
+              const nextPos = vec3_exports2.transformMat4(
+                vec3_exports2.create(),
+                vec3_exports2.add(
+                  vec3_exports2.create(),
+                  topCorner,
+                  vec3_exports2.fromValues(
+                    (j + 1) * ropeInitData.resolution,
+                    -i * ropeInitData.resolution,
+                    0
+                  )
+                ),
+                worldToScreen
+              );
+              this.drawLine(nextPos, currPos, "black", 1);
+            }
+          }
+        }
+      });
+    }
+  };
+  var ClothPreviewRenderer = _ClothPreviewRenderer;
+  ClothPreviewRenderer.queries = __spreadProps(__spreadValues({}, _ClothPreviewRenderer.queries), {
+    ropeEntities: {
+      components: [TransformData3D, ClothInitData]
+    }
+  });
+
   // src/DataComponents/RopeInitData.ts
   var RopeInitData = class extends Component {
   };
@@ -8026,6 +8149,8 @@
         );
       }
       mainWorld.registerSystem(RopePreviewRenderer, {
+        mainCanvas: coreRenderContext.mainCanvas
+      }).registerSystem(ClothPreviewRenderer, {
         mainCanvas: coreRenderContext.mainCanvas
       });
       try {

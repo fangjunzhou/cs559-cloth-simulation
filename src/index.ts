@@ -36,6 +36,7 @@ import { LineFrame3DSegment } from "white-dwarf/Mathematics/LineFrame3DSegment";
 import { Vector3 } from "white-dwarf/Mathematics/Vector3";
 import { Cam3DDragSystem } from "white-dwarf/Utils/System/Cam3DDragSystem";
 import { ClothInitSystem } from "./Systems/ClothInitSystem";
+import { ClothPreviewRenderer } from "./Systems/ClothPreviewRenderer";
 import { FollowPositionSystem } from "./Systems/FollowPositionSystem";
 import { RopeInitSystem } from "./Systems/RopeInitSystem";
 import { RopePreviewRenderer } from "./Systems/RopePreviewRenderer";
@@ -122,9 +123,13 @@ export const main = () => {
     }
 
     // Register preview systems.
-    mainWorld.registerSystem(RopePreviewRenderer, {
-      mainCanvas: coreRenderContext.mainCanvas,
-    });
+    mainWorld
+      .registerSystem(RopePreviewRenderer, {
+        mainCanvas: coreRenderContext.mainCanvas,
+      })
+      .registerSystem(ClothPreviewRenderer, {
+        mainCanvas: coreRenderContext.mainCanvas,
+      });
 
     // Setup editor scene camera.
     try {
