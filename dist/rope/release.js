@@ -4884,57 +4884,119 @@
 
   // white-dwarf/src/Core/Physics/Systems/JakobsenConstraintSystem.ts
   var JakobsenConstraintSystem = class extends System {
+    constructor() {
+      super(...arguments);
+      this.jakobsenIterations = 1;
+    }
+    init(attributes) {
+      if (attributes == null ? void 0 : attributes.jakobsenIteration) {
+        this.jakobsenIterations = attributes.jakobsenIterations;
+      }
+    }
     execute(delta, time) {
-      this.queries.constrainedEntities.results.forEach((entity) => {
-        const transform = entity.getMutableComponent(
-          TransformData3D
-        );
-        const constraints = entity.getComponent(ConstraintData);
-        constraints.constraints.forEach((constraint) => {
-          const targetEntity = constraint.target;
-          if (!targetEntity.hasComponent(TransformData3D)) {
-            return;
-          }
-          const targetTransform = targetEntity.getMutableComponent(
+      for (let i = 0; i < this.jakobsenIterations; i++) {
+        this.queries.constrainedEntities.results.forEach((entity) => {
+          const transform = entity.getMutableComponent(
             TransformData3D
           );
-          const distance4 = vec3_exports.dist(
-            targetTransform.position.value,
-            transform.position.value
+          const constraints = entity.getComponent(
+            ConstraintData
           );
-          const deltaDistance = distance4 - constraint.length;
-          if (!targetEntity.hasComponent(ConstraintData)) {
-            const movePos = vec3_exports.sub(
-              vec3_exports.create(),
+          constraints.constraints.forEach((constraint) => {
+            const targetEntity = constraint.target;
+            if (!targetEntity.hasComponent(TransformData3D)) {
+              return;
+            }
+            const targetTransform = targetEntity.getMutableComponent(
+              TransformData3D
+            );
+            const distance4 = vec3_exports.dist(
               targetTransform.position.value,
               transform.position.value
             );
-            vec3_exports.normalize(movePos, movePos);
-            vec3_exports.scale(movePos, movePos, deltaDistance);
-            vec3_exports.add(transform.position.value, transform.position.value, movePos);
-          } else {
-            const movePos = vec3_exports.sub(
-              vec3_exports.create(),
-              targetTransform.position.value,
-              transform.position.value
-            );
-            vec3_exports.normalize(movePos, movePos);
-            vec3_exports.scale(movePos, movePos, deltaDistance / 2);
-            vec3_exports.add(transform.position.value, transform.position.value, movePos);
-            vec3_exports.negate(movePos, movePos);
-            vec3_exports.add(
-              targetTransform.position.value,
-              targetTransform.position.value,
-              movePos
-            );
-          }
+            const deltaDistance = distance4 - constraint.length;
+            if (!targetEntity.hasComponent(ConstraintData)) {
+              const movePos = vec3_exports.sub(
+                vec3_exports.create(),
+                targetTransform.position.value,
+                transform.position.value
+              );
+              vec3_exports.normalize(movePos, movePos);
+              vec3_exports.scale(movePos, movePos, deltaDistance);
+              vec3_exports.add(
+                transform.position.value,
+                transform.position.value,
+                movePos
+              );
+            } else {
+              const movePos = vec3_exports.sub(
+                vec3_exports.create(),
+                targetTransform.position.value,
+                transform.position.value
+              );
+              vec3_exports.normalize(movePos, movePos);
+              vec3_exports.scale(movePos, movePos, deltaDistance / 2);
+              vec3_exports.add(
+                transform.position.value,
+                transform.position.value,
+                movePos
+              );
+              vec3_exports.negate(movePos, movePos);
+              vec3_exports.add(
+                targetTransform.position.value,
+                targetTransform.position.value,
+                movePos
+              );
+            }
+          });
         });
-      });
+      }
     }
   };
   JakobsenConstraintSystem.queries = {
     constrainedEntities: {
       components: [TransformData3D, ConstraintData]
+    }
+  };
+
+  // white-dwarf/src/Core/Physics/DataComponents/SyncTransform3DData.ts
+  var SyncTransform3DData = class extends Component {
+  };
+  SyncTransform3DData.schema = {
+    targetTransform: {
+      type: Types.Ref,
+      default: null
+    }
+  };
+  SyncTransform3DData = __decorateClass([
+    IComponent.register
+  ], SyncTransform3DData);
+
+  // white-dwarf/src/Core/Physics/Systems/Transform3DSyncSystem.ts
+  var Transform3DSyncSystem = class extends System {
+    execute(delta, time) {
+      this.queries.syncEntities.results.forEach((entity) => {
+        const syncData = entity.getComponent(
+          SyncTransform3DData
+        );
+        const transformData = entity.getComponent(
+          TransformData3D
+        );
+        syncData.targetTransform.copy(transformData);
+        syncData.targetTransform.eventEmitter.emit(
+          COMPONENT_CHANGE_EVENT,
+          syncData.targetTransform
+        );
+      });
+    }
+  };
+  Transform3DSyncSystem.queries = {
+    syncEntities: {
+      components: [TransformData3D, SyncTransform3DData],
+      listen: {
+        changed: true,
+        added: true
+      }
     }
   };
 
@@ -8390,8 +8452,9 @@
   // src/Systems/ClothInitSystem.ts
   var ClothInitSystem = class extends System {
     init(attributes) {
+      const mainWorld2 = attributes == null ? void 0 : attributes.mainWorld;
+      const physicsWorld2 = attributes == null ? void 0 : attributes.physicsWorld;
       this.queries.clothInitEntities.results.forEach((clothInitEntity) => {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _i;
         const transform = clothInitEntity.getComponent(
           TransformData3D
         );
@@ -8402,19 +8465,35 @@
         vec3_exports2.add(
           position1.value,
           position1.value,
-          vec3_exports2.fromValues(initData.width * initData.resolution / 2, 0, 0)
+          vec3_exports2.fromValues(-(initData.width * initData.resolution) / 2, 0, 0)
         );
-        const root1 = this.world.createEntity("Cloth Root 1").addComponent(SelectableObject).addComponent(TransformData3D, {
+        const root1 = mainWorld2.createEntity("Cloth Root 1").addComponent(SelectableObject).addComponent(TransformData3D, {
           position: position1
+        });
+        const physicsRoot1 = physicsWorld2.createEntity("Cloth Root 1").addComponent(TransformData3D, {
+          position: position1
+        });
+        root1.addComponent(SyncTransform3DData, {
+          targetTransform: physicsRoot1.getMutableComponent(
+            TransformData3D
+          )
         });
         const position2 = transform.position.clone();
         vec3_exports2.add(
           position2.value,
           position2.value,
-          vec3_exports2.fromValues(-(initData.width * initData.resolution) / 2, 0, 0)
+          vec3_exports2.fromValues(initData.width * initData.resolution / 2, 0, 0)
         );
-        const root2 = this.world.createEntity("Cloth Root 2").addComponent(SelectableObject).addComponent(TransformData3D, {
+        const root2 = mainWorld2.createEntity("Cloth Root 2").addComponent(SelectableObject).addComponent(TransformData3D, {
           position: position2
+        });
+        const physicsRoot2 = physicsWorld2.createEntity("Cloth Root 2").addComponent(TransformData3D, {
+          position: position2
+        });
+        root2.addComponent(SyncTransform3DData, {
+          targetTransform: physicsRoot2.getMutableComponent(
+            TransformData3D
+          )
         });
         const cloth = [];
         for (let i = 0; i < initData.height; i++) {
@@ -8423,8 +8502,8 @@
             cloth[i].push(null);
           }
         }
-        cloth[0][0] = root1;
-        cloth[0][initData.width - 1] = root2;
+        cloth[0][0] = [root1, physicsRoot1];
+        cloth[0][initData.width - 1] = [root2, physicsRoot2];
         for (let i = 0; i < initData.height; i++) {
           for (let j = 0; j < initData.width; j++) {
             if (cloth[i][j] === null) {
@@ -8438,10 +8517,26 @@
                   0
                 )
               );
-              cloth[i][j] = this.world.createEntity("Cloth Node").addComponent(TransformData3D, {
-                position
-              }).addComponent(VerletVelocityData3D).addComponent(MassData, {
-                mass: 0.1
+              cloth[i][j] = [
+                mainWorld2.createEntity("Cloth Node").addComponent(TransformData3D, {
+                  position
+                }),
+                physicsWorld2.createEntity("Cloth Node").addComponent(TransformData3D, {
+                  position
+                }).addComponent(VerletVelocityData3D).addComponent(MassData, {
+                  mass: 0.1
+                })
+              ];
+              const [mainEntity, physicsEntity] = cloth[i][j];
+              physicsEntity.addComponent(SyncTransform3DData, {
+                targetTransform: mainEntity.getMutableComponent(
+                  TransformData3D
+                )
+              });
+              mainEntity.addComponent(SyncTransform3DData, {
+                targetTransform: physicsEntity.getMutableComponent(
+                  TransformData3D
+                )
               });
             }
           }
@@ -8451,40 +8546,49 @@
             if (i === 0 && (j === 0 || j === initData.width - 1)) {
               continue;
             }
-            (_a = cloth[i][j]) == null ? void 0 : _a.addComponent(ConstraintData, {
+            const [mainEntity, physicsEntity] = cloth[i][j];
+            mainEntity.addComponent(ConstraintData, {
+              constraints: []
+            });
+            physicsEntity.addComponent(ConstraintData, {
               constraints: []
             });
             if (i > 0) {
               const upperNode = cloth[i - 1][j];
               if (upperNode !== null) {
-                const constraint = new Constraint(upperNode, initData.resolution);
-                (_c = (_b = cloth[i][j]) == null ? void 0 : _b.getMutableComponent(ConstraintData)) == null ? void 0 : _c.constraints.push(constraint);
+                this.addConstraint(upperNode[0], initData, mainEntity);
+                this.addConstraint(upperNode[1], initData, physicsEntity);
               }
             }
             if (i < initData.height - 1) {
               const lowerNode = cloth[i + 1][j];
               if (lowerNode !== null) {
-                const constraint = new Constraint(lowerNode, initData.resolution);
-                (_e = (_d = cloth[i][j]) == null ? void 0 : _d.getMutableComponent(ConstraintData)) == null ? void 0 : _e.constraints.push(constraint);
+                this.addConstraint(lowerNode[0], initData, mainEntity);
+                this.addConstraint(lowerNode[1], initData, physicsEntity);
               }
             }
             if (j > 0) {
               const leftNode = cloth[i][j - 1];
               if (leftNode !== null) {
-                const constraint = new Constraint(leftNode, initData.resolution);
-                (_g = (_f = cloth[i][j]) == null ? void 0 : _f.getMutableComponent(ConstraintData)) == null ? void 0 : _g.constraints.push(constraint);
+                this.addConstraint(leftNode[0], initData, mainEntity);
+                this.addConstraint(leftNode[1], initData, physicsEntity);
               }
             }
             if (j < initData.width - 1) {
               const rightNode = cloth[i][j + 1];
               if (rightNode !== null) {
-                const constraint = new Constraint(rightNode, initData.resolution);
-                (_i = (_h = cloth[i][j]) == null ? void 0 : _h.getMutableComponent(ConstraintData)) == null ? void 0 : _i.constraints.push(constraint);
+                this.addConstraint(rightNode[0], initData, mainEntity);
+                this.addConstraint(rightNode[1], initData, physicsEntity);
               }
             }
           }
         }
       });
+    }
+    addConstraint(target, initData, entity) {
+      var _a;
+      const constraint = new Constraint(target, initData.resolution);
+      (_a = entity == null ? void 0 : entity.getMutableComponent(ConstraintData)) == null ? void 0 : _a.constraints.push(constraint);
     }
     execute(delta, time) {
     }
@@ -8638,20 +8742,41 @@
   // src/Systems/RopeInitSystem.ts
   var RopeInitSystem = class extends System {
     init(attributes) {
+      const mainWorld2 = attributes == null ? void 0 : attributes.mainWorld;
+      const physicsWorld2 = attributes == null ? void 0 : attributes.physicsWorld;
       this.queries.ropeInitEntities.results.forEach((ropeInitEntity) => {
-        var _a;
+        var _a, _b;
         const transform = ropeInitEntity.getComponent(
           TransformData3D
         );
         const initData = ropeInitEntity.getComponent(
           RopeInitData
         );
-        let curr = this.world.createEntity("Rope Root").addComponent(SelectableObject).addComponent(TransformData3D, {
+        let curr = mainWorld2.createEntity("Rope Root").addComponent(SelectableObject).addComponent(TransformData3D, {
           position: transform.position.clone()
+        });
+        let physicsCurr = physicsWorld2.createEntity("Rope Root").addComponent(TransformData3D, {
+          position: transform.position.clone()
+        });
+        curr.addComponent(SyncTransform3DData, {
+          targetTransform: physicsCurr.getMutableComponent(
+            TransformData3D
+          )
         });
         const ropeResolution = initData.resolution;
         for (let i = 0; i < initData.length; i++) {
-          let next = this.world.createEntity("Rope Node").addComponent(TransformData3D, {
+          let next = mainWorld2.createEntity("Rope Node").addComponent(TransformData3D, {
+            position: new Vector3(
+              transform.position.value[0],
+              transform.position.value[1] - i * ropeResolution,
+              transform.position.value[2]
+            )
+          }).addComponent(ConstraintData, {
+            constraints: [new Constraint(curr, ropeResolution)]
+          });
+          (_a = curr.getComponent(ConstraintData)) == null ? void 0 : _a.constraints.push(new Constraint(next, ropeResolution));
+          curr = next;
+          let physicsNext = physicsWorld2.createEntity("Rope Node").addComponent(TransformData3D, {
             position: new Vector3(
               transform.position.value[0],
               transform.position.value[1] - i * ropeResolution,
@@ -8660,10 +8785,20 @@
           }).addComponent(VerletVelocityData3D).addComponent(MassData, {
             mass: 0.1
           }).addComponent(ConstraintData, {
-            constraints: [new Constraint(curr, ropeResolution)]
+            constraints: [new Constraint(physicsCurr, ropeResolution)]
           });
-          (_a = curr.getComponent(ConstraintData)) == null ? void 0 : _a.constraints.push(new Constraint(next, ropeResolution));
-          curr = next;
+          (_b = physicsCurr.getComponent(ConstraintData)) == null ? void 0 : _b.constraints.push(new Constraint(physicsNext, ropeResolution));
+          physicsCurr = physicsNext;
+          physicsCurr.addComponent(SyncTransform3DData, {
+            targetTransform: curr.getMutableComponent(
+              TransformData3D
+            )
+          });
+          curr.addComponent(SyncTransform3DData, {
+            targetTransform: physicsCurr.getMutableComponent(
+              TransformData3D
+            )
+          });
         }
       });
     }
@@ -8743,12 +8878,26 @@
         WorldSerializer.deserializeWorld(mainWorld, worldObject);
       }
       mainWorld.registerSystem(MainCameraInitSystem);
-      mainWorld.registerSystem(EulerVelocity3DMoveSystem).registerSystem(EulerVelocityGravitySystem);
-      mainWorld.registerSystem(VerletVelocity3DMoveSystem, {
+      physicsWorld.registerSystem(EulerVelocity3DMoveSystem).registerSystem(EulerVelocityGravitySystem);
+      physicsWorld.registerSystem(VerletVelocity3DMoveSystem, {
         priority: 100
       }).registerSystem(VerletVelocity3DGravitySystem);
-      mainWorld.registerSystem(JakobsenConstraintSystem);
-      mainWorld.registerSystem(RopeInitSystem).registerSystem(ClothInitSystem);
+      physicsWorld.registerSystem(JakobsenConstraintSystem, {
+        jakobsenIterations: 5
+      });
+      mainWorld.registerSystem(Transform3DSyncSystem, {
+        priority: -1e3
+      });
+      physicsWorld.registerSystem(Transform3DSyncSystem, {
+        priority: 1e3
+      });
+      mainWorld.registerSystem(RopeInitSystem, {
+        mainWorld,
+        physicsWorld
+      }).registerSystem(ClothInitSystem, {
+        mainWorld,
+        physicsWorld
+      });
       mainWorld.registerSystem(Cam3DDragSystem, {
         mainCanvas: coreRenderContext.mainCanvas
       }).registerSystem(EditorViewPort3DSystem, {
