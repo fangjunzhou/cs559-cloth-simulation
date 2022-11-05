@@ -1,4 +1,5 @@
 import { Attributes, System, SystemQueries } from "ecsy/System";
+import { World } from "ecsy/World";
 import { mainWorld } from "white-dwarf/Core";
 import { TransformData3D } from "white-dwarf/Core/Locomotion/DataComponent/TransformData3D";
 import {
@@ -6,6 +7,7 @@ import {
   Constraint,
 } from "white-dwarf/Core/Physics/DataComponents/ConstraintData";
 import { MassData } from "white-dwarf/Core/Physics/DataComponents/MassData";
+import { SyncTransform3DData } from "white-dwarf/Core/Physics/DataComponents/SyncTransform3DData";
 import { VerletVelocityData3D } from "white-dwarf/Core/Physics/DataComponents/VerletVelocityData3D";
 import { Vector3 } from "white-dwarf/Mathematics/Vector3";
 import { SelectableObject } from "white-dwarf/Utils/TagComponents/SelectableObject";
@@ -19,6 +21,9 @@ export class RopeInitSystem extends System {
   };
 
   init(attributes?: Attributes | undefined): void {
+    const mainWorld: World = attributes?.mainWorld as World;
+    const physicsWorld: World = attributes?.physicsWorld as World;
+
     this.queries.ropeInitEntities.results.forEach((ropeInitEntity) => {
       // Get transform.
       const transform = ropeInitEntity.getComponent(
@@ -30,16 +35,47 @@ export class RopeInitSystem extends System {
       ) as RopeInitData;
 
       // Add a rope.
-      let curr = this.world
+      let curr = mainWorld
         .createEntity("Rope Root")
         .addComponent(SelectableObject)
         .addComponent(TransformData3D, {
           position: transform.position.clone(),
         });
 
+      let physicsCurr = physicsWorld
+        .createEntity("Rope Root")
+        .addComponent(TransformData3D, {
+          position: transform.position.clone(),
+        });
+
+      curr.addComponent(SyncTransform3DData, {
+        targetTransform: physicsCurr.getMutableComponent(
+          TransformData3D
+        ) as TransformData3D,
+      });
+
       const ropeResolution = initData.resolution;
       for (let i = 0; i < initData.length; i++) {
-        let next = this.world
+        let next = mainWorld
+          .createEntity("Rope Node")
+          .addComponent(TransformData3D, {
+            position: new Vector3(
+              transform.position.value[0],
+              transform.position.value[1] - i * ropeResolution,
+              transform.position.value[2]
+            ),
+          })
+          .addComponent(ConstraintData, {
+            constraints: [new Constraint(curr, ropeResolution)],
+          });
+
+        curr
+          .getComponent(ConstraintData)
+          ?.constraints.push(new Constraint(next, ropeResolution));
+
+        curr = next;
+
+        let physicsNext = physicsWorld
           .createEntity("Rope Node")
           .addComponent(TransformData3D, {
             position: new Vector3(
@@ -53,14 +89,26 @@ export class RopeInitSystem extends System {
             mass: 0.1,
           })
           .addComponent(ConstraintData, {
-            constraints: [new Constraint(curr, ropeResolution)],
+            constraints: [new Constraint(physicsCurr, ropeResolution)],
           });
 
-        curr
+        physicsCurr
           .getComponent(ConstraintData)
-          ?.constraints.push(new Constraint(next, ropeResolution));
+          ?.constraints.push(new Constraint(physicsNext, ropeResolution));
 
-        curr = next;
+        physicsCurr = physicsNext;
+
+        physicsCurr.addComponent(SyncTransform3DData, {
+          targetTransform: curr.getMutableComponent(
+            TransformData3D
+          ) as TransformData3D,
+        });
+
+        curr.addComponent(SyncTransform3DData, {
+          targetTransform: physicsCurr.getMutableComponent(
+            TransformData3D
+          ) as TransformData3D,
+        });
       }
     });
   }
