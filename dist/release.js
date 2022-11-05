@@ -1458,16 +1458,17 @@
       );
     }
   });
+  var releaseInit = () => __async(void 0, null, function* () {
+    coreSetup();
+    yield systemContext.coreStart({});
+    mainInit();
+  });
   var mainInit = () => {
     timeContext.startTime = Date.now() / 1e3;
     timeContext.currentTime = timeContext.startTime;
     timeContext.deltaTime = 0;
     requestAnimationFrame(mainUpdate);
     physicsUpdate();
-  };
-  var resetWorld = () => {
-    mainWorld = new World();
-    physicsWorld = new World();
   };
 
   // white-dwarf/submodules/ecsy/src/Types.js
@@ -5714,9 +5715,6 @@
     loadWorldButton: null,
     editorModeDropdown: null
   };
-  var editorEventContext = {
-    onEntitySelected: []
-  };
   var editorControlContext = {
     controlMode: 1 /* Move */
   };
@@ -8783,219 +8781,24 @@
     };
   };
 
-  // white-dwarf/src/Editor/index.ts
-  var import_js_file_download2 = __toESM(require_file_download());
-
-  // white-dwarf/src/Editor/EditorEntityListManager.ts
-  var updateEntityList = (entities) => {
-    if (!editorUIContext.entityLists) {
-      return;
-    }
-    for (let i = 0; i < editorUIContext.entityLists.length; i++) {
-      const entityList = editorUIContext.entityLists[i];
-      while (entityList.firstChild) {
-        entityList.removeChild(entityList.firstChild);
-      }
-      for (let j = 0; j < entities.length; j++) {
-        const entity = entities[j];
-        const entityDiv = document.createElement("div");
-        const entityName = document.createElement("span");
-        entityName.innerText = entity.name === "" ? "Entity" : entity.name;
-        entityDiv.appendChild(entityName);
-        const entityId = document.createElement("span");
-        entityId.innerText = entity.id.toString();
-        entityDiv.appendChild(entityId);
-        entityDiv.style.cursor = "pointer";
-        entityDiv.className = "entityListItem";
-        entityList.appendChild(entityDiv);
-        entityDiv.onclick = () => {
-          editorEventContext.onEntitySelected.forEach((callback) => {
-            callback(entity);
-          });
-        };
-      }
-    }
-  };
-  var addNewEntity = (entityName) => {
-    mainWorld.createEntity(entityName);
-  };
-
-  // white-dwarf/src/Editor/index.ts
-  var platState = false;
-  var worldData = null;
-  var editorInit = () => {
-    console.log("Editor Started");
+  // src/release.ts
+  window.onload = () => {
     coreRenderContext.mainCanvas = document.getElementById(
       "mainCanvas"
     );
-    editorUIContext.entityLists = document.getElementsByClassName(
-      "entityList"
-    );
-    editorUIContext.entityInspector = document.getElementsByClassName(
-      "entityInspector"
-    );
-    editorUIContext.playButton = document.getElementById(
-      "playButton"
-    );
-    editorUIContext.entityNameInput = document.getElementById(
-      "entityName"
-    );
-    editorUIContext.createEntityButton = document.getElementById(
-      "createEntityButton"
-    );
-    editorUIContext.deserializeEntityButton = document.getElementById(
-      "fileInput"
-    );
-    editorUIContext.saveWorldButton = document.getElementById(
-      "saveWorldButton"
-    );
-    editorUIContext.loadWorldButton = document.getElementById(
-      "loadWorldButton"
-    );
-    editorUIContext.editorModeDropdown = document.getElementById(
-      "editorMode"
-    );
-    coreRenderContext.mainCanvas.oncontextmenu = () => false;
-    mainWorld.onEntityChanged.push(updateEntityList);
-    editorEventContext.onEntitySelected.push(updateEntityInspector);
-    coreSetup();
-    systemContext.editorStart();
-    setupPlayButton();
-    setupCreateEntityButton();
-    setupDeserializeEntityInput();
-    setupSaveLoadWorldButton();
-    setupEditorModeDropdown();
-    mainInit();
-    onResize();
-  };
-  var onResize = () => {
-    if (coreRenderContext.mainCanvas) {
-      coreRenderContext.mainCanvas.width = coreRenderContext.mainCanvas.clientWidth;
-      coreRenderContext.mainCanvas.height = coreRenderContext.mainCanvas.clientHeight;
-    }
-  };
-  var setupPlayButton = () => {
-    var _a;
-    (_a = editorUIContext.playButton) == null ? void 0 : _a.addEventListener("click", () => __async(void 0, null, function* () {
-      if (!platState) {
-        if (editorUIContext.playButton) {
-          editorUIContext.playButton.innerHTML = "Stop";
-        }
-        yield editorPlay();
-        platState = true;
-      } else {
-        if (editorUIContext.playButton) {
-          editorUIContext.playButton.innerHTML = "Play";
-        }
-        editorStop();
-        platState = false;
-      }
-    }));
-  };
-  var setupCreateEntityButton = () => {
-    var _a;
-    (_a = editorUIContext.createEntityButton) == null ? void 0 : _a.addEventListener("click", () => {
-      if (editorUIContext.entityNameInput) {
-        addNewEntity(editorUIContext.entityNameInput.value);
-        editorUIContext.entityNameInput.value = "";
-      } else {
-        addNewEntity();
-      }
-    });
-  };
-  var setupDeserializeEntityInput = () => {
-    var _a;
-    (_a = editorUIContext.deserializeEntityButton) == null ? void 0 : _a.addEventListener("click", () => {
-      let input = document.createElement("input");
-      input.type = "file";
-      input.onchange = (e) => {
-        var _a2;
-        const file = (_a2 = e.target.files) == null ? void 0 : _a2[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (e2) => {
-            var _a3;
-            const data = (_a3 = e2.target) == null ? void 0 : _a3.result;
-            if (data) {
-              const entityData = JSON.parse(data);
-              EntitySerializer.deserializeEntity(mainWorld, entityData);
-            }
-          };
-          reader.readAsText(file);
-        }
-      };
-      input.click();
-    });
-  };
-  var setupSaveLoadWorldButton = () => {
-    var _a, _b;
-    (_a = editorUIContext.saveWorldButton) == null ? void 0 : _a.addEventListener("click", () => {
-      const worldObject = WorldSerializer.serializeWorld(mainWorld);
-      (0, import_js_file_download2.default)(JSON.stringify(worldObject, null, 2), "world.json");
-    });
-    (_b = editorUIContext.loadWorldButton) == null ? void 0 : _b.addEventListener("click", () => {
-      let input = document.createElement("input");
-      input.type = "file";
-      input.onchange = (e) => {
-        var _a2;
-        const file = (_a2 = e.target.files) == null ? void 0 : _a2[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (e2) => {
-            var _a3;
-            const data = (_a3 = e2.target) == null ? void 0 : _a3.result;
-            if (data) {
-              worldData = JSON.parse(data);
-              editorStop();
-            }
-          };
-          reader.readAsText(file);
-        }
-      };
-      input.click();
-    });
-  };
-  function setupEditorModeDropdown() {
-    var _a;
-    (_a = editorUIContext.editorModeDropdown) == null ? void 0 : _a.addEventListener("change", (e) => {
-      const value = e.target.value;
-      switch (value) {
-        case "view":
-          editorControlContext.controlMode = 0 /* View */;
-          break;
-        case "move":
-          editorControlContext.controlMode = 1 /* Move */;
-          break;
-        default:
-          break;
-      }
-    });
-  }
-  var editorPlay = () => __async(void 0, null, function* () {
-    worldData = WorldSerializer.serializeWorld(mainWorld);
-    resetWorld();
-    mainWorld.onEntityChanged.push(updateEntityList);
-    coreSetup();
-    yield systemContext.coreStart({
-      worldObject: worldData
-    });
-  });
-  var editorStop = () => {
-    resetWorld();
-    mainWorld.onEntityChanged.push(updateEntityList);
-    coreSetup();
-    systemContext.editorStart();
-    if (worldData) {
-      WorldSerializer.deserializeWorld(mainWorld, worldData);
-    }
-  };
-  window.onload = editorInit;
-  window.onresize = onResize;
-
-  // src/editor.ts
-  window.onload = () => {
+    coreRenderContext.mainCanvas.oncontextmenu = (e) => {
+      e.preventDefault();
+    };
+    coreRenderContext.mainCanvas.width = window.innerWidth;
+    coreRenderContext.mainCanvas.height = window.innerHeight;
     main();
-    editorInit();
+    releaseInit();
+  };
+  window.onresize = () => {
+    if (coreRenderContext.mainCanvas) {
+      coreRenderContext.mainCanvas.width = window.innerWidth;
+      coreRenderContext.mainCanvas.height = window.innerHeight;
+    }
   };
 })();
-//# sourceMappingURL=editor.js.map
+//# sourceMappingURL=release.js.map
