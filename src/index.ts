@@ -35,6 +35,7 @@ import { EditorViewPort3DSystem } from "white-dwarf/Editor/System/EditorViewPort
 import { LineFrame3DSegment } from "white-dwarf/Mathematics/LineFrame3DSegment";
 import { Vector3 } from "white-dwarf/Mathematics/Vector3";
 import { Cam3DDragSystem } from "white-dwarf/Utils/System/Cam3DDragSystem";
+import { Object3DSelectSystem } from "white-dwarf/Utils/System/Object3DSelectSystem";
 import { ClothInitSystem } from "./Systems/ClothInitSystem";
 import { ClothPreviewRenderer } from "./Systems/ClothPreviewRenderer";
 import { FollowPositionSystem } from "./Systems/FollowPositionSystem";
@@ -56,8 +57,8 @@ export const main = () => {
       WorldSerializer.deserializeWorld(mainWorld, props.worldObject);
     } else {
       // Read world.json.
-      const worldObject = (await fetch("assets/world.json").then((response) =>
-        response.json()
+      const worldObject = (await fetch("assets/cloth_world.json").then(
+        (response) => response.json()
       )) as IWorldObject;
       // Deserialize the world.
       WorldSerializer.deserializeWorld(mainWorld, worldObject);
@@ -99,6 +100,9 @@ export const main = () => {
         mainCanvas: coreRenderContext.mainCanvas,
       })
       .registerSystem(EditorViewPort3DSystem, {
+        mainCanvas: coreRenderContext.mainCanvas,
+      })
+      .registerSystem(Object3DSelectSystem, {
         mainCanvas: coreRenderContext.mainCanvas,
       });
   };

@@ -8,6 +8,7 @@ import {
 import { MassData } from "white-dwarf/Core/Physics/DataComponents/MassData";
 import { VerletVelocityData3D } from "white-dwarf/Core/Physics/DataComponents/VerletVelocityData3D";
 import { Vector3 } from "white-dwarf/Mathematics/Vector3";
+import { SelectableObject } from "white-dwarf/Utils/TagComponents/SelectableObject";
 import { RopeInitData } from "../DataComponents/RopeInitData";
 
 export class RopeInitSystem extends System {
@@ -31,6 +32,7 @@ export class RopeInitSystem extends System {
       // Add a rope.
       let curr = this.world
         .createEntity("Rope Root")
+        .addComponent(SelectableObject)
         .addComponent(TransformData3D, {
           position: transform.position.clone(),
         });

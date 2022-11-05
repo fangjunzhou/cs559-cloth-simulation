@@ -8,6 +8,7 @@ import {
 } from "white-dwarf/Core/Physics/DataComponents/ConstraintData";
 import { MassData } from "white-dwarf/Core/Physics/DataComponents/MassData";
 import { VerletVelocityData3D } from "white-dwarf/Core/Physics/DataComponents/VerletVelocityData3D";
+import { SelectableObject } from "white-dwarf/Utils/TagComponents/SelectableObject";
 import { ClothInitData } from "../DataComponents/ClothInitData";
 
 export class ClothInitSystem extends System {
@@ -37,6 +38,7 @@ export class ClothInitSystem extends System {
       );
       const root1 = this.world
         .createEntity("Cloth Root 1")
+        .addComponent(SelectableObject)
         .addComponent(TransformData3D, {
           position: position1,
         });
@@ -48,6 +50,7 @@ export class ClothInitSystem extends System {
       );
       const root2 = this.world
         .createEntity("Cloth Root 2")
+        .addComponent(SelectableObject)
         .addComponent(TransformData3D, {
           position: position2,
         });
